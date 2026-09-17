@@ -1,0 +1,242 @@
+{
+  "schema_version": "labprism-capability-scorecard/1",
+  "version": 2,
+  "updated_at": "2026-09-17T07:58:27.568942+00:00",
+  "reference_url": "https://www.transfyr.ai/technology",
+  "reference_system_access": false,
+  "note": "计划状态；未验证指标为 null。官网未提供同条件性能比较证据。",
+  "modules": [
+    {
+      "id": "CV-01",
+      "name": "目标检测与类别泛化",
+      "status": "planned",
+      "metrics": {
+        "box_AP": null,
+        "precision": null,
+        "recall": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-02",
+      "name": "实例分割",
+      "status": "planned",
+      "metrics": {
+        "mask_AP": null,
+        "boundary_error": null,
+        "merge_rate": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-03",
+      "name": "语义分割",
+      "status": "planned",
+      "metrics": {
+        "mIoU": null,
+        "per_class_IoU": null,
+        "boundary_F1": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-04",
+      "name": "手部姿态估计与追踪",
+      "status": "planned",
+      "metrics": {
+        "PCK": null,
+        "AUC": null,
+        "handedness_error": null,
+        "track_loss": null,
+        "jitter": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-05",
+      "name": "器材跟踪与视频分割",
+      "status": "planned",
+      "metrics": {
+        "IDF1": null,
+        "HOTA": null,
+        "ID_switches": null,
+        "temporal_mask_quality": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-06",
+      "name": "手—器材交互与状态",
+      "status": "planned",
+      "metrics": {
+        "relation_F1": null,
+        "object_association_accuracy": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-07",
+      "name": "动作定位与步骤分段",
+      "status": "planned",
+      "metrics": {
+        "event_F1": null,
+        "temporal_AP": null,
+        "segment_F1": null,
+        "edit_score": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-08",
+      "name": "OCR 与器材属性",
+      "status": "planned",
+      "metrics": {
+        "CER": null,
+        "line_accuracy": null,
+        "decimal_sign_accuracy": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-09",
+      "name": "深度与 3D",
+      "status": "planned",
+      "metrics": {
+        "reprojection_error": null,
+        "scale_validity": null,
+        "depth_error": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "CV-10",
+      "name": "未知与异常",
+      "status": "planned",
+      "metrics": {
+        "false_alarm_rate": null,
+        "recall": null,
+        "coverage_risk": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "SYS-01",
+      "name": "多视角与多模态",
+      "status": "planned",
+      "metrics": {
+        "time_alignment_error": null,
+        "missing_rate": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    },
+    {
+      "id": "SYS-02",
+      "name": "真实视频产品",
+      "status": "prototype_only",
+      "metrics": {
+        "browser_acceptance": null,
+        "replay_reproducibility": null
+      },
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json"
+      ],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked",
+      "note": "仅官网静态原型已浏览器检查，连续视频和模型结果未接入；产品验收指标仍为 null。"
+    },
+    {
+      "id": "SYS-03",
+      "name": "推理权重交接、产品验收与 GPU/NPU 部署",
+      "status": "planned",
+      "metrics": {
+        "end_to_end_p95_ms": null,
+        "FPS": null,
+        "quantization_loss": null,
+        "rollback_verified": null
+      },
+      "evidence": [],
+      "comparison_to_reference": "not_comparable",
+      "model_candidates_status": "documented_not_benchmarked"
+    }
+  ],
+  "reproduction": [
+    {
+      "id": "REF-01",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-02",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-03",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-04",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-05",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-06",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-07",
+      "status": "planned",
+      "evidence": []
+    },
+    {
+      "id": "REF-08",
+      "status": "planned",
+      "evidence": []
+    }
+  ],
+  "project": "LabPrism",
+  "ownership": {
+    "LabPrism": [
+      "overall_architecture",
+      "website",
+      "inference_integration",
+      "product_acceptance",
+      "deployment"
+    ],
+    "AnnotationWorkbench": [
+      "datasets",
+      "annotation",
+      "training",
+      "original_training_records"
+    ]
+  }
+}

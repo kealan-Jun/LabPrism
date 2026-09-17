@@ -1,0 +1,39 @@
+{
+  "schema_version": "labprism-project/1",
+  "id": "labprism",
+  "name": "LabPrism",
+  "display_name": "实验棱镜",
+  "version": "0.1.0",
+  "workstreams": [
+    "website_and_demo",
+    "laboratory_visual_system"
+  ],
+  "data_root_default": "/home/x1/.local/share/labprism",
+  "nas_root_default": "/mnt/realityloop-nas/LabPrism",
+  "nas_mountpoint": "/mnt/realityloop-nas",
+  "preview": {
+    "host": "127.0.0.1",
+    "port": 8031,
+    "public": false
+  },
+  "producer": {
+    "project": "AnnotationWorkbench",
+    "repository": "/home/x1/Projects/AnnotationWorkbench",
+    "owns": [
+      "datasets",
+      "annotations",
+      "training",
+      "original_training_records"
+    ]
+  },
+  "training_requirements": {
+    "owner": "AnnotationWorkbench",
+    "preferred_device": "cuda",
+    "preferred_batches": [
+      16,
+      32
+    ]
+  },
+  "model_results_connected": false,
+  "nas_volume_id": "b01a5b29-90f0-4bf4-b060-416f4fc67da0"
+}

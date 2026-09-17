@@ -1,0 +1,45 @@
+# Environments and caches
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+node_modules/
+.DS_Store
+# Secrets
+.env
+.env.*
+!.env.example
+*credentials*.json
+# Generated artifacts belong outside this repository
+dist/
+build/
+runs/
+outputs/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.rknn
+*.engine
+*.safetensors
+*.sqlite*
+*.db
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.npy
+*.npz
+*.parquet
+*.log
+data/*
+!data/README.md

@@ -1,0 +1,8 @@
+{
+  "folders": [{ "name": "LabPrism · 实验棱镜", "path": "." }],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "files.exclude": {"**/__pycache__": true},
+    "search.exclude": {"**/.venv": true}
+  }
+}

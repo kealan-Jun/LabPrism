@@ -1,0 +1,275 @@
+{
+  "schema_version": "labprism-backlog/1",
+  "project": "LabPrism",
+  "version": "2.1",
+  "period": [
+    "2026-09-17",
+    "2026-11-11"
+  ],
+  "workstreams": [
+    "website_and_demo",
+    "visual_system"
+  ],
+  "ownership": {
+    "LabPrism": [
+      "overall_architecture",
+      "website",
+      "inference_integration",
+      "product_acceptance",
+      "deployment"
+    ],
+    "AnnotationWorkbench": [
+      "datasets",
+      "annotation",
+      "training",
+      "original_training_records"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "INIT-01",
+      "title": "独立项目、目录、规范、NAS 边界与迁移",
+      "owner_repository": "LabPrism",
+      "week": 1,
+      "depends_on": [],
+      "status": "done",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json",
+        "/home/x1/.local/share/labprism/receipts/project-migration-20260917.json"
+      ],
+      "completed_at": "2026-09-17T07:58:27.568942+00:00"
+    },
+    {
+      "id": "WEB-01",
+      "title": "首页、技术页与演示空间本地预览及浏览器检查",
+      "owner_repository": "LabPrism",
+      "week": 1,
+      "depends_on": [
+        "INIT-01"
+      ],
+      "status": "done",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json"
+      ],
+      "completed_at": "2026-09-17T07:58:27.568942+00:00"
+    },
+    {
+      "id": "AW-01",
+      "title": "代表性实验素材、来源分组和质量状态交接",
+      "owner_repository": "AnnotationWorkbench",
+      "week": 1,
+      "depends_on": [],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-01",
+      "title": "检测/分割/手姿真实推理候选小试",
+      "owner_repository": "LabPrism",
+      "week": 1,
+      "depends_on": [
+        "AW-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "WEB-02",
+      "title": "官网完整页面、响应式与必要真实品牌资料",
+      "owner_repository": "LabPrism",
+      "week": 2,
+      "depends_on": [
+        "WEB-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-02",
+      "title": "推理结果坐标、时间、版本与模型交付接口",
+      "owner_repository": "LabPrism",
+      "week": 2,
+      "depends_on": [
+        "SYS-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "AW-02",
+      "title": "各任务标签规范、实际复核与针对性补数据",
+      "owner_repository": "AnnotationWorkbench",
+      "week": 2,
+      "depends_on": [
+        "AW-01",
+        "SYS-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "AW-03",
+      "title": "分任务分视角 GPU 训练、固定验证与权重交付",
+      "owner_repository": "AnnotationWorkbench",
+      "week": 3,
+      "depends_on": [
+        "AW-02"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-03",
+      "title": "接收合格推理权重并对齐结果",
+      "owner_repository": "LabPrism",
+      "week": 3,
+      "depends_on": [
+        "SYS-02",
+        "AW-03"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-04",
+      "title": "手/器材跟踪、遮挡恢复与时序分割",
+      "owner_repository": "LabPrism",
+      "week": 3,
+      "depends_on": [
+        "SYS-02"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "WEB-03",
+      "title": "真实视频、图层、单件详情与原画对照",
+      "owner_repository": "LabPrism",
+      "week": 3,
+      "depends_on": [
+        "WEB-02",
+        "SYS-02"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "REL-01",
+      "title": "官网与端到端实验视觉 v0.1",
+      "owner_repository": "LabPrism",
+      "week": 4,
+      "depends_on": [
+        "WEB-03",
+        "SYS-03",
+        "SYS-04"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-05",
+      "title": "交互、动作定位、步骤与 OCR 推理联动",
+      "owner_repository": "LabPrism",
+      "week": 5,
+      "depends_on": [
+        "REL-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "WEB-04",
+      "title": "操作/读数时间线与证据回放",
+      "owner_repository": "LabPrism",
+      "week": 5,
+      "depends_on": [
+        "SYS-05",
+        "WEB-03"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "SYS-06",
+      "title": "几何/3D、多视角和多模态条件与样例",
+      "owner_repository": "LabPrism",
+      "week": 2,
+      "depends_on": [
+        "AW-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "AW-04",
+      "title": "根据产品错误改进训练并交付候选",
+      "owner_repository": "AnnotationWorkbench",
+      "week": 6,
+      "depends_on": [
+        "AW-03",
+        "REL-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "EVAL-01",
+      "title": "整链路回归、性能与错误累积比较",
+      "owner_repository": "LabPrism",
+      "week": 6,
+      "depends_on": [
+        "REL-01",
+        "SYS-05",
+        "AW-04"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "DEP-01",
+      "title": "模型转换、量化对照与前后处理部署",
+      "owner_repository": "LabPrism",
+      "week": 6,
+      "depends_on": [
+        "SYS-03"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "DEP-02",
+      "title": "目标硬件可用时 NPU 实测与长时间运行",
+      "owner_repository": "LabPrism",
+      "week": 7,
+      "depends_on": [
+        "DEP-01"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "EVAL-02",
+      "title": "新环境预验收并冻结最终候选",
+      "owner_repository": "LabPrism",
+      "week": 7,
+      "depends_on": [
+        "WEB-04",
+        "EVAL-01",
+        "SYS-06"
+      ],
+      "status": "todo",
+      "evidence": []
+    },
+    {
+      "id": "REL-02",
+      "title": "封存测试、官网与视觉系统 v1.0 试用交付",
+      "owner_repository": "LabPrism",
+      "week": 8,
+      "depends_on": [
+        "EVAL-02"
+      ],
+      "status": "todo",
+      "evidence": []
+    }
+  ]
+}
