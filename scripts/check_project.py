@@ -51,8 +51,8 @@ def main():
             path = unquote(parsed.path) or name
             if path == "assets/lab-scene.png":
                 continue  # Runtime asset verified by preview_website.py against its receipt.
-            target = (site / path).resolve()
-            assert target.is_relative_to(site.resolve()) and target.is_file(), (name, ref)
+            target = (root / "apps/viewer" / path.removeprefix("viewer/")).resolve() if path.startswith("viewer/") else (site / path).resolve()
+            assert target.is_relative_to((root / "apps").resolve()) and target.is_file(), (name, ref)
             if parsed.fragment:
                 assert parsed.fragment in pages[target.name].ids, (name, ref)
     for path in [*root.glob("scripts/*.py"), *root.glob("src/**/*.py")]:

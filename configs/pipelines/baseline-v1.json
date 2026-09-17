@@ -1,0 +1,10 @@
+{
+  "schema_version": "labprism-baseline-recipe/1",
+  "purpose": "offline_diagnostic_local_demo",
+  "sample_hz": 10,
+  "detector": {"backend": "pytorch_cuda", "imgsz": 960, "confidence": 0.25, "iou": 0.7, "half": true, "batch": 1},
+  "instance_segmentation": {"model": "sam2.1_t.pt", "backend": "pytorch_cuda", "prompts": "detector_boxes", "temporal_propagation": false},
+  "hands": {"model": "hand_landmarker.task", "backend": "CPU/XNNPACK", "mode": "VIDEO", "num_hands": 2, "thresholds": 0.5},
+  "unknown_metrics": null,
+  "public_release_authorized": false
+}
