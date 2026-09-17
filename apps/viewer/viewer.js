@@ -6,7 +6,7 @@ const colors = ["#d6f675","#63ddfa","#ffbb74","#e999ff","#68efba","#ff8db1"];
 let data = null, lastIndex = -1, generation = 0, ready = false, frameTime = null;
 const roleLabel = role => role === "first_person" ? "第一人称" : "第三人称";
 function element(tag, attrs, parent = svg) { const e=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))e.setAttribute(k,String(v));parent.appendChild(e);return e; }
-function indexAt(t) { let lo=0,hi=data.frames.length;while(lo<hi){const mid=(lo+hi)>>1;if(data.frames[mid].timestamp_ms<=t+0.5)lo=mid+1;else hi=mid;}return lo-1; }
+function indexAt(t) { let lo=0,hi=data.frames.length;while(lo<hi){const mid=(lo+hi)>>1;if(data.frames[mid].timestamp_ms<=t+0.001)lo=mid+1;else hi=mid;}return lo-1; }
 function message(value) { $("load-status").textContent=value; }
 function detail(index) {
   const obj=data?.frames[lastIndex]?.objects[Number(index)];
@@ -69,7 +69,7 @@ if(video.requestVideoFrameCallback){const tick=(_,meta)=>{frameTime=meta.mediaTi
 $("play").addEventListener("click",()=>{if(video.paused)video.play().catch(e=>message(`播放失败：${e.message}`));else video.pause();});
 $("seek").addEventListener("input",()=>go(Number($("seek").value)));
 $("speed").addEventListener("change",()=>{video.playbackRate=Number($("speed").value);});
-for(const [id,delta] of [["previous",-1],["next",1]])$(id).addEventListener("click",()=>{if(!data)return;const i=Math.max(0,Math.min(data.frames.length-1,indexAt(video.currentTime*1000)+delta));go(data.frames[i].timestamp_ms/1000);});
+for(const [id,delta] of [["previous",-1],["next",1]])$(id).addEventListener("click",()=>{if(!data)return;const i=Math.max(0,Math.min(data.frames.length-1,indexAt(video.currentTime*1000)+delta));go((data.frames[i].presentation_seconds ?? data.frames[i].timestamp_ms/1000)+0.000001);});
 for(const id of ["boxes","masks","hands","original"])$(id).addEventListener("change",()=>render(true));
 $("object-select").addEventListener("change",()=>{detail($("object-select").value);render(true);});
 (async()=>{try{const r=await fetch("demo-data/catalog.json");if(!r.ok)throw Error("尚未准备真实推理包");const catalog=await r.json();if(!catalog.clips?.length)throw Error("片段目录为空");$("clip-select").replaceChildren();catalog.clips.forEach((c,i)=>$("clip-select").add(new Option(c.title,String(i))));$("clip-select").disabled=false;$("clip-select").addEventListener("change",()=>loadClip(catalog.clips[Number($("clip-select").value)]));await loadClip(catalog.clips[0]);}catch(e){message(`${e.message}。请先运行本地推理并准备预览素材。`);}})();
