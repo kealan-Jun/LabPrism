@@ -1,0 +1,7 @@
+# Research inference candidates, installed in .venv-inference.
+-r inference-requirements.txt
+rtmlib==0.0.16
+onnxruntime==1.30.0
+transformers==4.57.6
+onnx==1.22.0
+scipy>=1.13,<2

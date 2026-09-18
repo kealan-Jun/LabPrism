@@ -27,6 +27,16 @@ def verify_run(directory):
             if Path(name).name != name or path.is_symlink() or not path.is_file() or sha256(path) != expected:
                 raise ValueError(f'Run member identity mismatch: {name}')
     result = validate_result(json.loads((directory/'result.json').read_text()))
+    for frame in result['frames']:
+        semantic = frame.get('semantic_map')
+        if semantic and receipt['files'].get(semantic['file']) != semantic['sha256']:
+            raise ValueError('Semantic map not bound to run receipt')
+    if result.get('derived_from'):
+        parent = result['derived_from']
+        if receipt['files'].get('baseline-result.json') != parent['result_sha256']:
+            raise ValueError('Parent predictions not bound to run receipt')
+        if 'baseline-receipt.json' in receipt['files'] and receipt['files']['baseline-receipt.json'] != parent['receipt_sha256']:
+            raise ValueError('Parent receipt mismatch')
     producer = json.loads((directory/'producer-receipt.json').read_text())
     source = dict(result['source'])
     clip_hash = source.pop('clip_sha256')

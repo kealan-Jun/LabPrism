@@ -5,10 +5,10 @@ from pathlib import Path
 import av,cv2,numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'src'))
 from labprism.artifacts import verify_run
-p=argparse.ArgumentParser();p.add_argument('run');p.add_argument('output');a=p.parse_args()
+p=argparse.ArgumentParser();p.add_argument('run');p.add_argument('output');p.add_argument('--times',type=float,nargs='+',default=[0,4]);a=p.parse_args()
 run,out=Path(a.run),Path(a.output);out.mkdir(parents=True,exist_ok=True)
 d=verify_run(run)
-frames=[min(d['frames'],key=lambda f:abs(f['timestamp_ms']-t)) for t in [0,4000]]
+frames=[min(d['frames'],key=lambda f:abs(f['timestamp_ms']-t*1000)) for t in a.times]
 targets={f['frame_index']:f for f in frames}
 edges=[(0,1),(1,2),(2,3),(3,4),(0,5),(5,6),(6,7),(7,8),(5,9),(9,10),(10,11),(11,12),(9,13),(13,14),(14,15),(15,16),(13,17),(0,17),(17,18),(18,19),(19,20)]
 with av.open(str(run/'clip.mp4')) as container:
@@ -26,8 +26,14 @@ with av.open(str(run/'clip.mp4')) as container:
    cv2.putText(overlay,f"{obj['label']} {obj['confidence']:.2f}",(x,max(y-3,13)),cv2.FONT_HERSHEY_SIMPLEX,.35,color,1)
   for hand in record['hands']:
    pts=[tuple(map(round,p[:2])) for p in hand['points']]
-   for a,b in edges:cv2.line(overlay,pts[a],pts[b],(80,255,255),2)
-   for point in pts:cv2.circle(overlay,point,3,(80,255,255),-1)
+   visible=[s>=hand.get('keypoint_threshold',.3) for s in hand.get('point_scores',[1]*21)]
+   for a,b in edges:
+    if visible[a] and visible[b]:cv2.line(overlay,pts[a],pts[b],(80,255,255),2)
+   for j,point in enumerate(pts):
+    if visible[j]:cv2.circle(overlay,point,3,(80,255,255),-1)
+  for obj in record.get('rejected_objects',[]):
+   x,y,x2,y2=map(int,obj['box']);cv2.rectangle(overlay,(x,y),(x2,y2),(100,100,255),2)
+   cv2.putText(overlay,'REJECTED '+obj['label'],(x,max(y-3,13)),cv2.FONT_HERSHEY_SIMPLEX,.4,(100,100,255),1)
   joined=np.concatenate([raw,overlay],axis=1)
   destination=out/f'{run.name}-{record["timestamp_ms"]:.0f}.jpg'
   if destination.exists():raise FileExistsError(destination)

@@ -39,12 +39,17 @@ def publish(nas,data_root,version,evidence=()):
     destination.mkdir(parents=True,exist_ok=False)
     catalog=json.loads((data_root/'receipts/demo-catalog.json').read_text())
     replay={'schema_version':'labprism-release-replay/1','clips':[],'models':[]}
+    used_models={}
     for entry in catalog['clips']:
         if not re.fullmatch(r'[a-z0-9-]+',entry['id']):raise ValueError('Unsafe clip ID')
         run=Path(entry['run']).resolve()
         if not run.is_relative_to((data_root/'runs').resolve()):raise ValueError('Unowned run')
         if any(p.is_symlink() for p in run.rglob('*')):raise ValueError('Run cannot contain symlinks')
         result=verify_run(run)
+        for model in result['models']:
+            key=(model['id'],model['sha256'])
+            if key in used_models and used_models[key]!=model:raise ValueError('Model registry collision')
+            used_models[key]=model
         shutil.copytree(run,destination/'runs'/entry['id'])
         producer_hash=sha256(run/'producer-receipt.json')
         media=next((p.parent for p in (data_root/'media').rglob('receipt.json') if sha256(p)==producer_hash),None)
@@ -52,24 +57,40 @@ def publish(nas,data_root,version,evidence=()):
         if any(p.is_symlink() for p in media.rglob('*')):raise ValueError('Media cannot contain symlinks')
         verify_media(media)
         shutil.copytree(media,destination/'media'/entry['id'])
-        replay['clips'].append({'id':entry['id'],'media':f"media/{entry['id']}",'sample_hz':result['video']['sample_hz']})
+        recipe={'id':entry['id'],'media':f"media/{entry['id']}",'sample_hz':result['video']['sample_hz'],'mode':'baseline'}
+        if result.get('derived_from'):
+            parent_hash=result['derived_from']['receipt_sha256']
+            parent=next((p.parent for p in (data_root/'runs').rglob('receipt.json') if sha256(p)==parent_hash),None)
+            if parent is None or any(p.is_symlink() for p in parent.rglob('*')):raise ValueError('Verified baseline dependency required')
+            verify_run(parent)
+            shutil.copytree(parent,destination/'parents'/entry['id'])
+            recipe.update(mode='candidate',baseline=f"parents/{entry['id']}")
+        replay['clips'].append(recipe)
     preview=data_root/'website-preview'
     if any(p.is_symlink() for p in preview.rglob('*')):raise ValueError('Preview must contain owned regular files')
     shutil.copytree(preview,destination/'website')
     shutil.copytree(project/'docs',destination/'documents')
     (destination/'code').mkdir()
     subprocess.run(['git','archive','--format=tar.gz','-o',str(destination/'code/source.tar.gz'),'HEAD'],cwd=project,check=True)
-    models=json.loads((data_root/'receipts/baseline-models-20260917.json').read_text())
-    for m in models['models']:
+    for m in used_models.values():
         if sha256(m['path'])!=m['sha256']:raise ValueError('Model hash mismatch')
         target=destination/'models'/m['sha256']/Path(m['path']).name
         target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(m['path'],target)
         received=dict(m,path=str(target.relative_to(destination)))
+        for name,expected in m.get('auxiliary_files',{}).items():
+            original=Path(m['path']).parent/name
+            if Path(name).name!=name or sha256(original)!=expected:raise ValueError('Auxiliary model file mismatch')
+            shutil.copy2(original,target.parent/name)
         if m.get('producer_receipt'):
             if sha256(m['producer_receipt'])!=m['producer_receipt_sha256']:raise ValueError('Producer model receipt mismatch')
             shutil.copy2(m['producer_receipt'],target.parent/'producer-receipt.json')
             received['producer_receipt']=str((target.parent/'producer-receipt.json').relative_to(destination))
         replay['models'].append(received)
+    license_root=data_root/'models/public'
+    for name in ['rtmlib-license.txt','mmpose-license.txt']:
+        if (license_root/name).is_file():
+            (destination/'licenses').mkdir(exist_ok=True)
+            shutil.copy2(license_root/name,destination/'licenses'/name)
     (destination/'replay.json').write_text(json.dumps(replay,ensure_ascii=False,indent=2)+'\n')
     for directory in evidence:
         directory=Path(directory).resolve()

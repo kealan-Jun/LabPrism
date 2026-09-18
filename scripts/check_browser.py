@@ -23,7 +23,10 @@ def inspect_overlay(page, result):
     for box, obj in zip(boxes, frame['objects']):
         x,y,x2,y2 = obj['box']
         assert all(abs(a-b) < .001 for a,b in zip(box, [x,y,x2-x,y2-y]))
-    assert page.locator('#overlay circle').count() == 21*len(frame['hands'])
+    expected_points = [p[:2] for hand in frame['hands'] for i,p in enumerate(hand['points'])
+                       if not hand.get('point_scores') or hand['point_scores'][i] >= hand.get('keypoint_threshold',.3)]
+    points = page.locator('#overlay circle').evaluate_all('es=>es.map(e=>[+e.getAttribute("cx"),+e.getAttribute("cy")])')
+    assert points == expected_points, 'Only score-qualified actual keypoints may be drawn'
     return frame['frame_index']
 
 
@@ -99,6 +102,22 @@ def main():
             page.locator('#labels').check()
             assert page.locator('#overlay text').count() == len(current['objects'])
             page.locator('#labels').uncheck()
+            if result['schema_version'] == 'labprism-video-result/2':
+                assert not page.locator('#semantic').is_checked()
+                page.locator('#semantic').check()
+                assert page.locator('#overlay .semantic').count() == len(current['semantic_regions'])
+                assert '误分' in page.locator('#semantic-note').inner_text()
+                page.locator('#semantic').uncheck()
+                page.locator('#trails').check()
+                assert page.locator('#overlay .trail').count() == sum(bool(o.get('trail')) for o in current['objects']+current['hands'])
+                page.locator('#original').check()
+                assert page.locator('#overlay > *').count() == 0
+                page.locator('#original').uncheck()
+                page.locator('#trails').uncheck()
+                assert '非整链路速度' in page.locator('#evidence').inner_text()
+            else:
+                assert page.locator('#semantic').is_disabled()
+                assert page.locator('#trails').is_disabled()
             if current['objects']:
                 page.locator('#object-select').select_option('0')
                 assert page.locator('#overlay rect').count() == 1

@@ -1,10 +1,10 @@
 {
   "schema_version": "labprism-capability-scorecard/1",
-  "version": 3,
-  "updated_at": "2026-09-18T03:15:29.815449+00:00",
+  "version": 4,
+  "updated_at": "2026-09-18T03:59:00.340231+00:00",
   "reference_url": "https://www.transfyr.ai/technology",
   "reference_system_access": false,
-  "note": "真实离线开发基线与浏览器链路已验证；独立质量指标保持 null，无同条件参考系统比较证据。",
+  "note": "候选推理与内部回归已实际执行；退化方案被拒绝，未作独立质量/训练/生产晋级。NPU全部后置。",
   "modules": [
     {
       "id": "CV-01",
@@ -16,11 +16,32 @@
         "recall": null
       },
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json",
+        "/home/x1/.local/share/labprism/evaluations/detection-regression-20260918-v1/report.json",
+        "/home/x1/.local/share/labprism/evaluations/detection-resolution-20260918-v1/report.json"
       ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
-      "note": "两人称检测诊断候选已有真实输出；NAS 屏幕误检保留，准确率与跨环境泛化未测。"
+      "model_candidates_status": "regression_candidates_rejected",
+      "note": "背景冲突过滤误伤2个真天平，1280两视角退化；保留960，原背景误检未解决。",
+      "internal_regression": {
+        "scope": "exposed_project_annotations_not_independent",
+        "first_person": {
+          "images": 16,
+          "tp": 155,
+          "fp": 21,
+          "fn": 59,
+          "precision": 0.8806818181818182,
+          "recall": 0.7242990654205608
+        },
+        "third_person_crops": {
+          "images": 2,
+          "tp": 15,
+          "fp": 0,
+          "fn": 12,
+          "precision": 1,
+          "recall": 0.5555555555555556
+        }
+      }
     },
     {
       "id": "CV-02",
@@ -41,20 +62,23 @@
     {
       "id": "CV-03",
       "name": "语义分割",
-      "status": "planned",
+      "status": "research_candidate_quality_rejected",
       "metrics": {
         "mIoU": null,
         "per_class_IoU": null,
         "boundary_F1": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/candidate-review-20260918-v2/review.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "segformer_b0_executed_domain_failure",
+      "note": "ADE20K真实语义输出把实验台大面积错分，默认关闭；研究限定许可，mIoU无真值未测。"
     },
     {
       "id": "CV-04",
       "name": "手部姿态估计与追踪",
-      "status": "partial_baseline_verified",
+      "status": "research_candidate_executed",
       "metrics": {
         "PCK": null,
         "AUC": null,
@@ -63,12 +87,13 @@
         "jitter": null
       },
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json",
+        "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json"
       ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
-      "note": "MediaPipe CPU 21 点：戴手套两段均 0/80 帧输出，裸手 80/80 帧有输出；无手身份或准确率验收。",
-      "output_coverage": {
+      "model_candidates_status": "mediapipe_and_rtmpose_compared",
+      "note": "RTMPose二维手姿在手套视频有输出帧增加，关节错位/遮挡缺失仍在；没有PCK/左右手或身份验收。",
+      "baseline_output_coverage": {
         "first_person_gloves": {
           "frames_with_output": 0,
           "frames": 80
@@ -82,21 +107,39 @@
           "frames": 80
         },
         "is_accuracy_metric": false
+      },
+      "output_coverage": {
+        "first_person_gloves": {
+          "frames_with_output": 80,
+          "frames": 80
+        },
+        "third_person_gloves": {
+          "frames_with_output": 62,
+          "frames": 80
+        },
+        "first_person_bare_hands": {
+          "frames_with_output": 80,
+          "frames": 80
+        },
+        "is_accuracy_metric": false
       }
     },
     {
       "id": "CV-05",
       "name": "器材跟踪与视频分割",
-      "status": "planned",
+      "status": "research_candidate_executed",
       "metrics": {
         "IDF1": null,
         "HOTA": null,
         "ID_switches": null,
         "temporal_mask_quality": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/candidate-review-20260918-v2/review.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "causal_iou_motion_association_executed",
+      "note": "轨迹关联已执行，未造缺帧检测。器材轨迹176/105/19，仍有碎片化；无视频分割传播或HOTA/IDF1。"
     },
     {
       "id": "CV-06",
@@ -183,15 +226,16 @@
       "name": "真实视频产品",
       "status": "partial_baseline_verified",
       "metrics": {
-        "browser_acceptance": "passed_for_three_short_clips_four_viewport_widths",
+        "browser_acceptance": "passed_six_baseline_candidate_entries_four_viewports",
         "replay_reproducibility": "240_of_240_prediction_frames_identical"
       },
       "evidence": [
-        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json",
+        "/home/x1/.local/share/labprism/evaluations/browser-candidate-20260918-v1/receipt.json"
       ],
       "comparison_to_reference": "not_comparable",
       "model_candidates_status": "baseline_executed_improvement_comparison_pending",
-      "note": "真实 8 秒片段的原画/图层/实例详情/逐帧/下载与浏览器检查通过；完整长视频、轨迹与动作时间线未完成。"
+      "note": "六组短视频候选/基线、低分点隐藏、轨迹/语义检查、冲突说明通过；完整实验长视频和事件仍待。"
     },
     {
       "id": "SYS-03",
@@ -210,7 +254,7 @@
       ],
       "comparison_to_reference": "not_comparable",
       "model_candidates_status": "baseline_executed_improvement_comparison_pending",
-      "note": "GPU 检测/SAM 与 CPU 手姿离线链路已复跑；未晋级正式训练权重，未转换量化或 NPU 实板运行。 内部离线包已回读校验；从包内源码/素材/权重的独立目录复跑通过。"
+      "note": "GPU 检测/SAM 与 CPU 手姿离线链路已复跑；未晋级正式训练权重，未转换量化或 NPU 实板运行。 内部离线包已回读校验；从包内源码/素材/权重的独立目录复跑通过。 用户要求NPU转换/量化/实板全部后置。"
     }
   ],
   "reproduction": [

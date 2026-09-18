@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 3,
+  "version": 4,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -127,7 +127,7 @@
       "evidence": [
         "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
       ],
-      "note": "video-result/1 与素材/候选模型回执已实现；正式训练后权重晋级、回归与回滚交付尚待。"
+      "note": "video-result/2 已接2D空深度、分数、语义原图hash、因果轨迹及父结果；正式模型晋级与回滚待质量验收。"
     },
     {
       "id": "AW-02",
@@ -138,8 +138,11 @@
         "AW-01",
         "SYS-01"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/annotation-workbench/exports/labprism/model-evaluation-20260918-v1/receipt.json"
+      ],
+      "note": "已有97图冻结项目复核导出，其中18图val可做内部回归；没有新标注，独立来源全图/手姿/语义覆盖待补。"
     },
     {
       "id": "AW-03",
@@ -172,8 +175,11 @@
       "depends_on": [
         "SYS-02"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json"
+      ],
+      "note": "因果一对一轨迹关联已在240帧运行；器材身份碎片化仍明显，无身份真值、无视频mask传播或遮挡恢复质量验收。"
     },
     {
       "id": "WEB-03",
@@ -186,9 +192,10 @@
       ],
       "status": "in_progress",
       "evidence": [
-        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json",
+        "/home/x1/.local/share/labprism/evaluations/browser-candidate-20260918-v1/receipt.json"
       ],
-      "note": "三段短视频、图层、实例详情、原画对照已验证；完整长视频、稳定身份与错误交互仍待完善。"
+      "note": "六组候选/基线回放、低分点隐藏、轨迹、语义失败检查、冲突证据通过Chrome；完整长视频及动作仍待。"
     },
     {
       "id": "REL-01",
@@ -271,7 +278,8 @@
         "SYS-03"
       ],
       "status": "todo",
-      "evidence": []
+      "evidence": [],
+      "note": "2026-09-18 用户明确后置；先完善模型能力与真实质量。"
     },
     {
       "id": "DEP-02",
@@ -282,7 +290,8 @@
         "DEP-01"
       ],
       "status": "todo",
-      "evidence": []
+      "evidence": [],
+      "note": "2026-09-18 用户明确后置；先完善模型能力与真实质量。"
     },
     {
       "id": "EVAL-02",
@@ -307,7 +316,25 @@
       ],
       "status": "todo",
       "evidence": []
+    },
+    {
+      "id": "SYS-07",
+      "title": "戴手套手姿、背景混淆与语义候选比较和质量改进",
+      "owner_repository": "LabPrism",
+      "week": 2,
+      "depends_on": [
+        "SYS-01",
+        "SYS-02"
+      ],
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/candidate-review-20260918-v2/review.json",
+        "/home/x1/.local/share/labprism/evaluations/detection-regression-20260918-v1/report.json",
+        "/home/x1/.local/share/labprism/evaluations/detection-resolution-20260918-v1/report.json"
+      ],
+      "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。"
     }
   ],
-  "updated_at": "2026-09-18T03:15:29.815449+00:00"
+  "updated_at": "2026-09-18T03:15:29.815449+00:00",
+  "priority_note": "用户要求当前专注模型能力；NPU 转换、量化和实板部署最后推进。"
 }

@@ -6,6 +6,8 @@ Build two connected deliverables: a complete LabPrism website/demo experience an
 
 Read `README.md`, `docs/CURRENT-WORK.md`, `docs/ROADMAP.zh-CN.md`, and the relevant architecture/contract before implementation. Keep this guidance current when the user changes direction. User instructions take precedence; execute authorized reversible work without inventing additional approval gates.
 
+Current user priority: improve real model capabilities first. Defer NPU conversion, quantization and board deployment until the final phase. Use the website as an inspection surface for real outputs.
+
 ## Project ownership
 
 - Repository: `/home/x1/Projects/LabPrism`. It has its own Git history, Python environment and dependencies.

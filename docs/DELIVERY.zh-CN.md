@@ -21,7 +21,7 @@ python3 scripts/check_project.py
 .venv/bin/python -m pytest -q
 # pip install -e '.[browser]'；使用本机 Chrome，无需另下载浏览器
 .venv/bin/python scripts/check_browser.py --output /外部运行根/evaluations/新的浏览器版本
-.venv-inference/bin/python scripts/verify_demo.py /home/x1/.local/share/labprism/receipts/demo-catalog.json --compare-root /home/x1/.local/share/labprism/runs/reproduction-20260918-v2 --output /外部运行根/receipts/新的核验回执.json
+.venv-inference/bin/python scripts/verify_demo.py /home/x1/.local/share/labprism/receipts/demo-catalog-baseline-20260918-v2.json --compare-root /home/x1/.local/share/labprism/runs/reproduction-20260918-v2 --output /外部运行根/receipts/新的核验回执.json
 ```
 
 浏览器脚本使用真实输入核对叠加坐标、骨架点数、逐帧定位、播放/暂停、倍速、图层/原画、实例详情、下载、失败恢复和四种宽度。所有截图与运行回执写到代码库外。图像/时间一致及重复运行一致不等于模型准确。
@@ -44,3 +44,9 @@ PYTHONPATH=src .venv-inference/bin/python scripts/replay_release.py /内部版�
 ```
 
 复跑读取包内素材/权重，写新的运行目录与重定位回执，原始生产方记录保留。要求真实 CUDA；手姿实际运行于 CPU。该包是离线诊断演示交付，没有模型晋级、商业发布、量化或 NPU 实板完成含义。
+
+## 研究候选包
+
+候选包保留原基线，按每个 run 的真实模型清单打包权重及辅助配置/许可。`parents/` 保存可核验的完整父运行，`replay.json` 标记 `mode=candidate`。重放候选使用包内父预测和新阶段权重，不把复用父阶段当作整链路重跑速度。安装 `candidate-requirements.txt`，使用 `--clip dissolve-first-candidate`；旧基线入口仍可完整重跑。
+
+研究候选含不合格语义与未验收手姿/轨迹，READY 仍只表示文件完整。SegFormer 为研究/评估限定许可，不得据此认为模型已可商用。NPU 全部后置。

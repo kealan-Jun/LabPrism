@@ -49,6 +49,20 @@ def test_complete_run_receipt(stored_run):
     assert verify_run(stored_run)['source']['camera_role']=='first_person'
 
 
+@pytest.mark.parametrize('kind',['semantic','parent'])
+def test_rejects_unbound_candidate_dependencies(stored_run,kind):
+    run=stored_run
+    result=json.loads((run/'result.json').read_text())
+    result['schema_version']='labprism-video-result/2'
+    if kind=='semantic':
+        result['frames'][0]['semantic_map']={'file':'semantic-000000.png','sha256':'a'*64,'taxonomy':'ADE20K-150'}
+    else:result['derived_from']={'result_sha256':'a'*64,'receipt_sha256':'b'*64}
+    (run/'result.json').write_text(json.dumps(result))
+    receipt=json.loads((run/'receipt.json').read_text());receipt['files']['result.json']=sha256(run/'result.json')
+    (run/'receipt.json').write_text(json.dumps(receipt))
+    with pytest.raises(ValueError):verify_run(run)
+
+
 @pytest.mark.parametrize('change',['evidence','producer','model','missing','traversal'])
 def test_run_refuses_inconsistent_evidence(stored_run,change):
     run=stored_run;r=json.loads((run/'receipt.json').read_text())
