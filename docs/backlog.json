@@ -330,7 +330,8 @@
       "evidence": [
         "/home/x1/.local/share/labprism/evaluations/candidate-review-20260918-v2/review.json",
         "/home/x1/.local/share/labprism/evaluations/detection-regression-20260918-v1/report.json",
-        "/home/x1/.local/share/labprism/evaluations/detection-resolution-20260918-v1/report.json"
+        "/home/x1/.local/share/labprism/evaluations/detection-resolution-20260918-v1/report.json",
+        "/mnt/realityloop-nas/LabPrism/receipts/model-candidates-20260918-v1-replay.json"
       ],
       "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。"
     }

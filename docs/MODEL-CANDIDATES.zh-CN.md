@@ -59,6 +59,8 @@ PYTHONPATH=src .venv-inference/bin/python -m labprism.perception.candidate \
 
 新增阶段分别为 7.331 / 7.264 / 8.411 分析帧/s；复用了此前检测和 SAM 结果，不能当作完整流水线速度。父阶段时间保存在 `baseline_metrics`，整链路指标保持 null。
 
+NAS 包：`/mnt/realityloop-nas/LabPrism/releases/model-candidates-20260918-v1`，452 文件完整性核验通过；归档源码在独立目录用包内权重/父预测重跑三段新增阶段，240/240 帧候选载荷一致。复跑包含语义索引图 SHA256、手点、轨迹、上下文与冲突。复跑回执为运行根 `receipts/candidate-package-replay-20260918-v1.json`，另有 267 文件补充证据存 NAS。源媒体、权重、标签、预测与日志均未进 Git。
+
 ## 接下来优先解决
 
 在 AnnotationWorkbench 补齐独立来源的第三人称全图、手套遮挡关键点与实验台语义标注，保留同实验/相邻帧/同步机位分组。当前 all_workbench_training 质量暂停仍有效：需解决或隔离问题批次、补足独立来源验证覆盖并明确父权重。未因运行候选推理而解除。

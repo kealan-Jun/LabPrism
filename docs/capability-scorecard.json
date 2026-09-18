@@ -227,7 +227,8 @@
       "status": "partial_baseline_verified",
       "metrics": {
         "browser_acceptance": "passed_six_baseline_candidate_entries_four_viewports",
-        "replay_reproducibility": "240_of_240_prediction_frames_identical"
+        "replay_reproducibility": "240_of_240_prediction_frames_identical",
+        "candidate_replay_reproducibility": "240_of_240_candidate_prediction_frames_identical_from_packaged_parent_and_weights"
       },
       "evidence": [
         "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json",
@@ -250,7 +251,9 @@
       "evidence": [
         "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json",
         "/mnt/realityloop-nas/LabPrism/releases/diagnostic-demo-20260918-v2/release.json",
-        "/home/x1/.local/share/labprism/receipts/package-replay-verification-20260918-v2.json"
+        "/home/x1/.local/share/labprism/receipts/package-replay-verification-20260918-v2.json",
+        "/mnt/realityloop-nas/LabPrism/releases/model-candidates-20260918-v1/release.json",
+        "/mnt/realityloop-nas/LabPrism/receipts/model-candidates-20260918-v1-replay.json"
       ],
       "comparison_to_reference": "not_comparable",
       "model_candidates_status": "baseline_executed_improvement_comparison_pending",
