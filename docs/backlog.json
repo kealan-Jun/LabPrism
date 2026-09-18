@@ -92,9 +92,14 @@
         "WEB-01",
         "SYS-01"
       ],
-      "status": "in_progress",
-      "evidence": [],
-      "note": "浏览器及复跑已验证；待本轮源码推送和 NAS 实际回读。不替代 REL-01 v0.1 验收。"
+      "status": "done",
+      "evidence": [
+        "/mnt/realityloop-nas/LabPrism/releases/diagnostic-demo-20260918-v2/release.json",
+        "/home/x1/.local/share/labprism/receipts/package-replay-verification-20260918-v2.json",
+        "/mnt/realityloop-nas/LabPrism/receipts/diagnostic-demo-20260918-v2-acceptance.json"
+      ],
+      "note": "三段诊断基线和真实浏览器链路已交付；GitHub 普通推送、NAS 113 文件回读及独立目录包复跑通过。不替代 REL-01 v0.1 验收。",
+      "completed_at": "2026-09-18T03:15:29.815449+00:00"
     },
     {
       "id": "WEB-02",
@@ -304,5 +309,5 @@
       "evidence": []
     }
   ],
-  "updated_at": "2026-09-18T03:05:47.839038+00:00"
+  "updated_at": "2026-09-18T03:15:29.815449+00:00"
 }

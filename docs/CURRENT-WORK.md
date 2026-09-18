@@ -32,7 +32,11 @@
 
 39 项单元测试与 `python3 scripts/check_project.py` 已通过。三段复跑离线吞吐分别为 6.142 / 7.450 / 8.915 分析帧/s；输入以 10 Hz 抽样。它们是共享 GPU 下的本次壁钟测量，不能作全帧实时速度或相对旧版性能提升结论。
 
-GitHub 推送与 NAS 发布状态在本轮实际完成后补记；源码归档来自干净提交，媒体/数据/预测/权重/日志均不进 Git。
+GitHub 已完成普通提交与推送，远端分支为 `codex/bootstrap`；内部包源码提交 `c14baf4`。工作媒体、数据、预测、权重与日志未进入 Git。
+
+内部 NAS 交付：`/mnt/realityloop-nas/LabPrism/releases/diagnostic-demo-20260918-v2`，113 个文件回读通过，`release.json` SHA256 为 `4d4b432ae99cd864b4efe370bb98f6ad285c4342c8a51cb2df11cae0118bd9c0`。v1 保留，没有覆盖或公网发布。
+
+从 v2 包解出的源码在无 `.git` 独立目录中，直接使用包内素材/权重成功复跑第一人称片段；80/80 帧源图校验与预测载荷比较通过。回执为运行根 `receipts/package-replay-verification-20260918-v2.json`。补充的三段复跑与包复跑共 40 个文件已归档到 NAS `evaluations/diagnostic-demo-20260918-v2`，逐文件 hash 见 NAS `receipts/diagnostic-demo-20260918-v2-acceptance.json`。这是内部离线交付与完整性验收，没有模型质量晋级。
 
 ## 下一轮直接继续
 

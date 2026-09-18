@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-capability-scorecard/1",
   "version": 3,
-  "updated_at": "2026-09-18T03:05:47.839038+00:00",
+  "updated_at": "2026-09-18T03:15:29.815449+00:00",
   "reference_url": "https://www.transfyr.ai/technology",
   "reference_system_access": false,
   "note": "真实离线开发基线与浏览器链路已验证；独立质量指标保持 null，无同条件参考系统比较证据。",
@@ -204,11 +204,13 @@
         "rollback_verified": null
       },
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json",
+        "/mnt/realityloop-nas/LabPrism/releases/diagnostic-demo-20260918-v2/release.json",
+        "/home/x1/.local/share/labprism/receipts/package-replay-verification-20260918-v2.json"
       ],
       "comparison_to_reference": "not_comparable",
       "model_candidates_status": "baseline_executed_improvement_comparison_pending",
-      "note": "GPU 检测/SAM 与 CPU 手姿离线链路已复跑；未晋级正式训练权重，未转换量化或 NPU 实板运行。"
+      "note": "GPU 检测/SAM 与 CPU 手姿离线链路已复跑；未晋级正式训练权重，未转换量化或 NPU 实板运行。 内部离线包已回读校验；从包内源码/素材/权重的独立目录复跑通过。"
     }
   ],
   "reproduction": [
