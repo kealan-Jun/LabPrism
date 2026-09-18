@@ -1,0 +1,13 @@
+[Unit]
+Description=LabPrism local video preview
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects/LabPrism
+ExecStart=%h/Projects/LabPrism/.venv/bin/python scripts/preview_website.py --port 8031
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,36 +1,42 @@
 {
   "schema_version": "labprism-capability-scorecard/1",
-  "version": 2,
-  "updated_at": "2026-09-17T07:58:27.568942+00:00",
+  "version": 3,
+  "updated_at": "2026-09-18T03:05:47.839038+00:00",
   "reference_url": "https://www.transfyr.ai/technology",
   "reference_system_access": false,
-  "note": "计划状态；未验证指标为 null。官网未提供同条件性能比较证据。",
+  "note": "真实离线开发基线与浏览器链路已验证；独立质量指标保持 null，无同条件参考系统比较证据。",
   "modules": [
     {
       "id": "CV-01",
       "name": "目标检测与类别泛化",
-      "status": "planned",
+      "status": "partial_baseline_verified",
       "metrics": {
         "box_AP": null,
         "precision": null,
         "recall": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "两人称检测诊断候选已有真实输出；NAS 屏幕误检保留，准确率与跨环境泛化未测。"
     },
     {
       "id": "CV-02",
       "name": "实例分割",
-      "status": "planned",
+      "status": "partial_baseline_verified",
       "metrics": {
         "mask_AP": null,
         "boundary_error": null,
         "merge_rate": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "SAM 2.1 Tiny 检测框提示逐帧实例分割已运行；未作 mask 真值评测，不是语义/视频分割。"
     },
     {
       "id": "CV-03",
@@ -48,7 +54,7 @@
     {
       "id": "CV-04",
       "name": "手部姿态估计与追踪",
-      "status": "planned",
+      "status": "partial_baseline_verified",
       "metrics": {
         "PCK": null,
         "AUC": null,
@@ -56,9 +62,27 @@
         "track_loss": null,
         "jitter": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "MediaPipe CPU 21 点：戴手套两段均 0/80 帧输出，裸手 80/80 帧有输出；无手身份或准确率验收。",
+      "output_coverage": {
+        "first_person_gloves": {
+          "frames_with_output": 0,
+          "frames": 80
+        },
+        "third_person_gloves": {
+          "frames_with_output": 0,
+          "frames": 80
+        },
+        "first_person_bare_hands": {
+          "frames_with_output": 80,
+          "frames": 80
+        },
+        "is_accuracy_metric": false
+      }
     },
     {
       "id": "CV-05",
@@ -142,50 +166,59 @@
     {
       "id": "SYS-01",
       "name": "多视角与多模态",
-      "status": "planned",
+      "status": "partially_implemented",
       "metrics": {
         "time_alignment_error": null,
         "missing_rate": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "来源/相机身份与人称独立保存；多机位没有同步精度或跨视角身份验收。"
     },
     {
       "id": "SYS-02",
       "name": "真实视频产品",
-      "status": "prototype_only",
+      "status": "partial_baseline_verified",
       "metrics": {
-        "browser_acceptance": null,
-        "replay_reproducibility": null
+        "browser_acceptance": "passed_for_three_short_clips_four_viewport_widths",
+        "replay_reproducibility": "240_of_240_prediction_frames_identical"
       },
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json"
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
       ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked",
-      "note": "仅官网静态原型已浏览器检查，连续视频和模型结果未接入；产品验收指标仍为 null。"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "真实 8 秒片段的原画/图层/实例详情/逐帧/下载与浏览器检查通过；完整长视频、轨迹与动作时间线未完成。"
     },
     {
       "id": "SYS-03",
       "name": "推理权重交接、产品验收与 GPU/NPU 部署",
-      "status": "planned",
+      "status": "partially_implemented",
       "metrics": {
         "end_to_end_p95_ms": null,
         "FPS": null,
         "quantization_loss": null,
         "rollback_verified": null
       },
-      "evidence": [],
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
       "comparison_to_reference": "not_comparable",
-      "model_candidates_status": "documented_not_benchmarked"
+      "model_candidates_status": "baseline_executed_improvement_comparison_pending",
+      "note": "GPU 检测/SAM 与 CPU 手姿离线链路已复跑；未晋级正式训练权重，未转换量化或 NPU 实板运行。"
     }
   ],
   "reproduction": [
     {
       "id": "REF-01",
-      "status": "planned",
-      "evidence": []
+      "status": "partially_implemented",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "已验证短片回放部分，不代表本项完整算法/质量验收。"
     },
     {
       "id": "REF-02",
@@ -194,13 +227,19 @@
     },
     {
       "id": "REF-03",
-      "status": "planned",
-      "evidence": []
+      "status": "partially_implemented",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "已验证短片回放部分，不代表本项完整算法/质量验收。"
     },
     {
       "id": "REF-04",
-      "status": "planned",
-      "evidence": []
+      "status": "partially_implemented",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "已验证短片回放部分，不代表本项完整算法/质量验收。"
     },
     {
       "id": "REF-05",
@@ -209,8 +248,11 @@
     },
     {
       "id": "REF-06",
-      "status": "planned",
-      "evidence": []
+      "status": "partially_implemented",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "已验证短片回放部分，不代表本项完整算法/质量验收。"
     },
     {
       "id": "REF-07",

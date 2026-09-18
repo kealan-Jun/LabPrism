@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": "2.1",
+  "version": 3,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -49,7 +49,8 @@
       ],
       "status": "done",
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json"
+        "/home/x1/.local/share/labprism/receipts/bootstrap-verification-20260917.json",
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
       ],
       "completed_at": "2026-09-17T07:58:27.568942+00:00"
     },
@@ -59,8 +60,11 @@
       "owner_repository": "AnnotationWorkbench",
       "week": 1,
       "depends_on": [],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/producer-demo-delivery.json"
+      ],
+      "note": "已接收同实验两人称 8 秒片段及 NAS 裸手对照；更多 NAS 有效实验、冻结验证与封存测试分组尚待完成。"
     },
     {
       "id": "SYS-01",
@@ -70,8 +74,27 @@
       "depends_on": [
         "AW-01"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "done",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/baseline-models-20260917.json",
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json",
+        "/home/x1/.local/share/labprism/evaluations/review-20260918-v1/review.json"
+      ],
+      "note": "W1 检测/框提示分割/手姿基线小试和复跑已完成；不代表准确率验收、训练或改进候选比较完成。",
+      "completed_at": "2026-09-18T03:05:47.839038+00:00"
+    },
+    {
+      "id": "REL-00",
+      "title": "首段真实离线诊断演示、GitHub 与 NAS 内部包",
+      "owner_repository": "LabPrism",
+      "week": 1,
+      "depends_on": [
+        "WEB-01",
+        "SYS-01"
+      ],
+      "status": "in_progress",
+      "evidence": [],
+      "note": "浏览器及复跑已验证；待本轮源码推送和 NAS 实际回读。不替代 REL-01 v0.1 验收。"
     },
     {
       "id": "WEB-02",
@@ -81,8 +104,11 @@
       "depends_on": [
         "WEB-01"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "三页完整导航及四种宽度已验证；正式品牌联系资料、长期视频与公开发布尚待。"
     },
     {
       "id": "SYS-02",
@@ -92,8 +118,11 @@
       "depends_on": [
         "SYS-01"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/receipts/reproduction-verification-20260918-v2.json"
+      ],
+      "note": "video-result/1 与素材/候选模型回执已实现；正式训练后权重晋级、回归与回滚交付尚待。"
     },
     {
       "id": "AW-02",
@@ -150,8 +179,11 @@
         "WEB-02",
         "SYS-02"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json"
+      ],
+      "note": "三段短视频、图层、实例详情、原画对照已验证；完整长视频、稳定身份与错误交互仍待完善。"
     },
     {
       "id": "REL-01",
@@ -271,5 +303,6 @@
       "status": "todo",
       "evidence": []
     }
-  ]
+  ],
+  "updated_at": "2026-09-18T03:05:47.839038+00:00"
 }

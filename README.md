@@ -11,7 +11,9 @@ LabPrism 是独立的实验视觉项目，包含两条同时推进的主线：
 
 ## 当前状态
 
-2026-09-17：独立仓库、目录、规范、双线排期与本地运行入口已建立。官网首页、技术页、演示页有静态预览，使用自有实验原始图片；新模型输出、连续视频和动作时间线尚未接入。暂无本项目新训练模型、已验收算法精度或 NPU 部署。
+2026-09-18：三页官网已接入真实视频查看器，可播放、逐分析帧定位、切换检测/实例分割/手姿图层、查看单件详情和下载结果。已有第一/第三人称实验各一段及 NAS 裸手诊断一段，每段约 8 秒、80 个分析帧；240 帧已核验解码图像与时间，并成功复跑。Chrome 在 320/390/768/1440 像素宽度通过检查。
+
+这是离线开发演示：戴手套的两段均无手姿输出，裸手片段存在背景误检；尚无独立准确率或新环境泛化成绩，没有新训练、语义/视频传播分割、跨帧身份、动作/OCR 或 NPU 验收。完整 v0.1/v1.0 仍按证据推进。
 
 项目名 LabPrism 为本项目采用的名称，不包含域名可用性或商标检索结论。
 
@@ -34,12 +36,14 @@ LabPrism 是独立的实验视觉项目，包含两条同时推进的主线：
 ```bash
 cd /home/x1/Projects/LabPrism
 python3 scripts/check_project.py
-python3 scripts/preview_website.py --port 8031
+.venv/bin/python scripts/preview_website.py --port 8031
 ```
 
 访问 `http://127.0.0.1:8031/`。脚本只发布独立静态目录到本机回环地址，不暴露数据库、NAS 根或整个工作数据目录。图片由已接收的预览素材包提供；全新机器需要先取得相应素材回执。
 
-本项目推理环境使用 `.venv`；基础仓库当前没有强制安装 Torch、CUDA 或教师模型，后续按实测兼容性建立推理环境。数据集、标注工具、训练器、训练环境与原始训练记录继续由 AnnotationWorkbench 负责，不在这里重复建设。
+本机已有用户级 `labprism-preview.service` 管理 8031 预览；先用 `systemctl --user status labprism-preview` 检查，避免重复启动。服务配置与验证/内部发布说明见 [交付与复现](docs/DELIVERY.zh-CN.md)。
+
+`.venv` 用于开发/浏览器检查；独立 `.venv-inference` 使用 Python 3.12、PyTorch CUDA、SAM 2.1 Tiny 和 MediaPipe。安装与基线复现见 [真实视频基线](docs/INFERENCE-BASELINE.zh-CN.md)。数据集、标注工具、训练器、训练环境与原始训练记录继续由 AnnotationWorkbench 负责。
 
 ## 存储位置
 

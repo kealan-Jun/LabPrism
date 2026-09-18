@@ -26,3 +26,9 @@ python3 scripts/preview_website.py --prepare-only
 - 项目检测权重保留来源 SHA256 和原交接回执，历史训练细节仍归生产方；不在这里编造完整训练恢复记录。
 
 后续应按错误样例在 AnnotationWorkbench 补足验证与标签，再比较改进候选；当前不解除生产方训练暂停。下一项优先是跟踪与视频分割对照、独立语义模型小试及稳定的全片视频，再接 OCR/事件。NPU 板卡、量化与实板都未完成。
+
+## 2026-09-18 接手验收
+
+修复 PyAV 关闭容器后读取时长的问题，重新执行三段（240 分析帧）。所有源帧 PTS/RGB hash 一致，所有预测载荷与原基线逐帧一致；复跑回执在运行根 `receipts/reproduction-verification-20260918-v2.json`。两人称戴手套片段均未检出手姿；裸手对照有输出，同时保留屏幕误检。
+
+初始 `reproduction-20260918-v1` 第三段未完成；失败目录和日志保留。最终 `reproduction-20260918-v2` 三段均成功。浏览器和完整包复跑命令见 [交付说明](DELIVERY.zh-CN.md)。

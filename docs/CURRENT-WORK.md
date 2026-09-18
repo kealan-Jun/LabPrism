@@ -1,28 +1,44 @@
-# 当前工作 · 2026-09-17
+# 当前工作 · 2026-09-18
 
-最新授权：用户明确网站与算法两部分都做，并要求先命名项目、创建独立文件夹、目录结构和 Agent 规范。项目名采用 **LabPrism / 实验棱镜**。
+用户授权本对话负责完整官网、推理系统及 GitHub 接入，并保留 AnnotationWorkbench 的数据/标注/训练归属。沿用 9/17–11/11 的八周计划；本轮目标是首个可复现真实演示的接手、修复与内部交付。
 
-最新归属纠正：数据集、标注、训练继续由 AnnotationWorkbench 承担；整体项目、官网、算法推理集成、产品验收与部署在 LabPrism。这里不建立重复的训练实现或权威数据集库。按此归属迁出此前临时放在标注项目中的官网和总体计划资料。
+## 接手核实
 
-## 已完成的初始化
+- 本地分支 `codex/bootstrap`，接手时 HEAD `c2ea7bf`；origin 正确，远端当时为 `597ef82`，本地已有两个未推送实现提交。保留并继续了三个修改文件和未跟踪的证据渲染脚本。
+- 旧文档落后于代码：实际上已有三段基线输出和查看器。接手时 8031 无监听；现由 `labprism-preview.service` 提供 `http://127.0.0.1:8031/demo.html`，只监听回环。
+- 检查进程工作目录与本地终端任务队列，没有发现其他正在操作 LabPrism 的终端任务；另一终端位于 FieldRecognition。本轮未创建任务或代理，未改动其他项目服务。
+- RTX 3090 Ti 24 GB 与已有工作负载共享。检测/SAM 使用 CUDA，MediaPipe 使用 CPU/XNNPACK；未停止已有 GPU 工作负载。
+- NAS 为真实 CIFS 挂载，卷 ID `b01a5b29-90f0-4bf4-b060-416f4fc67da0` 与项目身份一致。
 
-- 建立 `/home/x1/Projects/LabPrism` 独立代码目录、AGENTS.md / Agent.md、README、工作区和 Python 项目定义。
-- 官网源代码迁入本项目 `apps/website` 并采用 LabPrism 名称；此前版本及总体计划已从 AnnotationWorkbench 迁出，保存在本项目 `docs/history`、独立运行根和 NAS 历史区。
-- 将主排期改为官网线 + 视觉算法线；数据准备为支持工作，飞轮不再是主任务或必做前置。
-- 推理、跟踪、理解、几何、产品验收和部署目录建立了职责文档；训练实现继续留在 AnnotationWorkbench。
-- 独立 Git 仓库、`.venv` 和 NAS `/mnt/realityloop-nas/LabPrism` 已建立。迁移按 6 组逐文件核对 SHA256，数据集、标注数据库与训练文件未迁出。
-- 本地预览已由 LabPrism 的脚本提供；浏览器检查通过首页、技术页、演示页、键盘页签切换和原图弹窗。自动检查覆盖项目入口、JSON、任务依赖、页面链接与脚本语法。
-- 后续持续任务已指向 LabPrism 的规范、排期和执行清单；数据/标注/训练任务仍要求在 AnnotationWorkbench 执行。
-- 用户已创建 GitHub 仓库 `https://github.com/kealan-Jun/LabPrism.git`，本地 `origin` 已配置。2026-09-17 查询远程尚无 refs；本地尚未创建首次提交或推送。接手提示词位于 `docs/TASK-PROMPT.zh-CN.md`。
+## 已有证据与本轮结果
 
-## 真实完成边界
+1. **素材与模型接收**：沿用 AnnotationWorkbench 的版本化素材包和模型回执。两段溶解搅拌素材来自同实验第一/第三人称；第三段为 NAS 裸手操作电脑对照。三段均为 train 开发组、约 8 秒，原模型接触状态 unknown。数据集所有权没有转移；第三段不算完整实验。
+2. **真实推理**：检测候选 + SAM 2.1 Tiny 框提示逐帧实例分割 + MediaPipe 21 点已运行。原版本在 `runs/baseline-20260917-v2`。本轮 `runs/reproduction-20260918-v2` 重跑三段，每段 80 帧，240 帧预测载荷逐帧相同；两组共 480 个解码帧的 PTS/RGB hash 通过校验。
+3. **真实缺口**：两段戴手套视频手姿输出均为 0/80 帧；NAS 裸手对照为 80/80 帧有输出，但屏幕误检为天平。实际查看三个约 4 秒时刻的原画/预测对照和浏览器截图，记录为项目代理抽样检查，没有创建人工真值或完整逐帧标签。
+4. **产品**：三页官网、片段切换、播放/暂停/倍速、逐分析帧、原画开关、框/mask/骨架/标签开关、实例详情、定位点及 JSON 下载已真实浏览器验证。320/390/768/1440 宽度无横向溢出。事件、OCR 和轨迹未生成。
+5. **修复**：提前缓存 PyAV 容器时长，消除关闭容器后读取失效原生元数据导致的复跑失败；切换片段时清空旧证据和下载链接，失败时禁用操作，成功载入后保留倍速；预览校验完整输入/模型/证据回执。
+6. **内部交付工具**：NAS 发布校验卷身份、模型/素材/运行 SHA256 与干净源码，打包完整输入、权重、源码、网页和评审证据；提供可迁移路径的复跑入口。READY 仅代表文件完整性，不代表算法晋级。
 
-网站当前为静态设计预览。使用一张已逐字节校验接收的原始实验图，不含新模型叠加结果；检测/分割/手姿训练和 NPU 部署尚未完成。尚未进行完整手机视口验收。素材交接、迁移和初始化验证记录分别保存在独立运行根 `receipts/website-media-import.json`、`receipts/project-migration-20260917.json` 和 `receipts/bootstrap-verification-20260917.json`。NAS 文档及官网预览包的实际发布内容以 `receipts/bootstrap-publication-20260917.json` 为准。
+## 验证入口
 
-## 接下来
+全部运行证据位于 `/home/x1/.local/share/labprism`，不进 Git：
 
-1. 在 AnnotationWorkbench 选择并交付少量有代表性的实验视频，保留来源、第一/第三人称和质量状态。
-2. 在 LabPrism 开始检测、分割与手姿真实推理小试，保存模型、输入和输出身份；需要标注和训练时交由 AnnotationWorkbench 实施。
-3. 根据真实输出落实 `packages/contracts`，接入 `apps/viewer` 的连续视频和图层，同时完善官网页面和手机适配。
+- `receipts/takeover-20260918.json`：接手核实。
+- `receipts/producer-demo-delivery.json` 与 `receipts/baseline-models-20260917.json`：生产方交接；原训练记录仍在 AnnotationWorkbench。
+- `receipts/reproduction-verification-20260918-v2.json`：逐帧源图校验及复跑比较。
+- `evaluations/browser-20260918-v2/receipt.json`：真实 Chrome 检查及截图。
+- `evaluations/review-20260918-v1/review.json`：错误样例和代理检查身份。
+- `logs/reproduction-20260918-v1.log`：保留修复前失败；`logs/reproduction-20260918-v2.log` 为修复后运行。
 
-引用资料和已有实验数据是来源，不代表可修改外部项目。后续执行以本项目 AGENTS.md、ROADMAP 与 backlog 为准；旧工作台的飞轮历史不应覆盖这里的产品方向。
+37 项单元测试与 `python3 scripts/check_project.py` 已通过。三段复跑离线吞吐分别为 6.142 / 7.450 / 8.915 分析帧/s；输入以 10 Hz 抽样。它们是共享 GPU 下的本次壁钟测量，不能作全帧实时速度或相对旧版性能提升结论。
+
+GitHub 推送与 NAS 发布状态在本轮实际完成后补记；源码归档来自干净提交，媒体/数据/预测/权重/日志均不进 Git。
+
+## 下一轮直接继续
+
+1. 在 AnnotationWorkbench 依据失败样例交付更多真实实验开发视频，优先 NAS 中有效的第一/第三人称操作、戴手套/透明/密集/新背景；固定验证分组与封存测试边界。现有三段不满足 W4 三个不同实验完整视频要求。
+2. 对同一开发输入比较戴手套手姿改进候选、检测误检控制与独立语义分割基线。需要补标签或训练时在 AnnotationWorkbench 实施，保留质量隔离和父模型记录。
+3. 实现并评测器材/手部身份关联与遮挡恢复，再接视频分割、OCR、交互和步骤时间线；未产生的输出继续明确为空。
+4. 完善官网能力状态、长视频及键盘体验。正式品牌/联系资料、公开素材及 NPU 板卡未明确时，相关发布/实板验收保持未完成。
+
+**完成边界**：代码、真实推理和本地浏览器链路已验证；本轮无实际标注或训练。准确率、泛化、时序质量、量化损失、实板 NPU 均未测得，未宣称超过参考系统。v0.1 和 v1.0 尚未验收。

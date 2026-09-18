@@ -11,8 +11,7 @@ import re
 import shutil
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from labprism.artifacts import sha256
-from labprism.contracts import validate_result
+from labprism.artifacts import sha256, verify_run
 
 
 def copy_file(source, destination):
@@ -43,15 +42,11 @@ def prepare(project, data_root):
             if not re.fullmatch(r'[a-z0-9-]+',name): raise ValueError('Unsafe demo ID')
             run=Path(item['run']).resolve()
             if not run.is_relative_to((data_root/'runs').resolve()):raise ValueError('Run must be inside owned runtime root')
-            r=json.loads((run/'receipt.json').read_text())
-            for member in ['result.json','clip.mp4']:
-                if sha256(run/member)!=r['files'][member]:raise ValueError('Inference receipt mismatch')
-            result=validate_result(json.loads((run/'result.json').read_text()))
-            if result['source']['clip_sha256']!=sha256(run/'clip.mp4'):raise ValueError('Video/result identity mismatch')
+            verify_run(run)
             for parent in [destination/'demo-data',destination/'demo-data'/name]:
                 if parent.is_symlink(): raise ValueError('Unsafe demo directory')
             for member in ['result.json','clip.mp4']:copy_file(run/member,destination/'demo-data'/name/member)
-            public['clips'].append({'id':name,'title':item['title'],'result':f'demo-data/{name}/result.json','video':f'demo-data/{name}/clip.mp4'})
+            public['clips'].append({'id':name,'title':item['title'],'review_note':item.get('review_note',''),'result':f'demo-data/{name}/result.json','video':f'demo-data/{name}/clip.mp4'})
         (destination/'demo-data/catalog.json').write_text(json.dumps(public,ensure_ascii=False,indent=2)+'\n')
     return destination
 
