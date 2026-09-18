@@ -7,10 +7,23 @@ import json
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 import time
 
 from labprism.artifacts import sha256, verify_media
 from labprism.contracts import validate_result
+
+
+def source_revision(project):
+    """An extracted source archive has no Git checkout; never borrow cwd's HEAD."""
+    project = Path(project)
+    if not (project/'.git').exists():
+        return {'git_commit':None, 'git_dirty':None}
+    head = subprocess.run(['git','rev-parse','HEAD'],cwd=project,text=True,capture_output=True)
+    if head.returncode:
+        return {'git_commit':None, 'git_dirty':None}
+    dirty = subprocess.check_output(['git','status','--porcelain'],cwd=project,text=True)
+    return {'git_commit':head.stdout.strip(), 'git_dirty':bool(dirty.strip())}
 
 
 def run(media, output, model_receipt, sample_hz=10):
@@ -105,7 +118,7 @@ def run(media, output, model_receipt, sample_hz=10):
     result=dict(schema_version='labprism-video-result/1',created_at=datetime.now(timezone.utc).isoformat(),mode='offline_sampled_inference',prediction_status='unreviewed_model_proposals',source={**source,'clip_sha256':sha256(output/'clip.mp4')},video={'file':'clip.mp4','width':width,'height':height,'duration_ms':duration_ms,'sample_hz':sample_hz,'coordinate_system':'clip_pixels_top_left_xy','mirror_applied':False,'rotation_applied':False,'hand_z':'model_relative_wrist_depth_not_metric_global_3d'},models=[detector_info,mask_info,hand_info],environment={'python':platform.python_version(),'packages':versions,'gpu':torch.cuda.get_device_name(),'cuda':torch.version.cuda,'hand_provider':'CPU/XNNPACK','inference_batch':1,'detector_half':True,'seed':20260917},configuration={'detector_imgsz':960,'confidence':0.25,'iou':0.7,'max_det':100,'sam_imgsz':1024,'sam_prompts':'all_detector_boxes','temporal_mask_propagation':False,'hand_num_hands':2,'hand_thresholds':0.5},frames=frames,events=[],limitations=['diagnostic development clips; no independent ground truth','SAM masks depend on detector boxes and are per-frame, not video segmentation','handedness is raw model output, mirror convention unvalidated','unknown/undetected objects remain unknown; empty output is not background truth','no physical-contact, semantic, OCR, step or metric-3D claims'],metrics={'accuracy':None,'generalization':None,'temporal_quality':None,'npu_fps':None,'decoded_inference_wall_seconds':round(decode_elapsed,3),'processed_frames':len(frames),'sampled_pipeline_fps':round(len(frames)/decode_elapsed,3),'total_wall_seconds':round(time.perf_counter()-started,3),'peak_torch_allocated_mib':round(torch.cuda.max_memory_allocated()/2**20,1),'frames_with_hands':sum(bool(f['hands']) for f in frames),'module_warm_p50_ms':{key:round(float(np.median([f['latency_ms'][key] for f in frames[1:]])),3) for key in ['detector','segmenter','hands']}})
     validate_result(result)
     (output/'result.json').write_text(json.dumps(result,ensure_ascii=False,separators=(',',':')))
-    manifest={'schema_version':'labprism-inference-run/1','files':{p.name:sha256(p) for p in output.iterdir() if p.is_file()},'evidence':{p.name:sha256(p) for p in evidence.iterdir()},'source_sha256':source['source_sha256'],'model_receipt_sha256':sha256(model_receipt),'git_commit':__import__('subprocess').check_output(['git','rev-parse','HEAD'],text=True).strip(),'implementation_sha256':sha256(__file__),'git_dirty':bool(__import__('subprocess').check_output(['git','status','--porcelain'],text=True).strip())}
+    manifest={'schema_version':'labprism-inference-run/1','files':{p.name:sha256(p) for p in output.iterdir() if p.is_file()},'evidence':{p.name:sha256(p) for p in evidence.iterdir()},'source_sha256':source['source_sha256'],'model_receipt_sha256':sha256(model_receipt),**source_revision(Path(__file__).resolve().parents[3]),'implementation_sha256':sha256(__file__),'source_release':registry.get('source_release')}
     (output/'receipt.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(result['metrics']),flush=True)
     return result

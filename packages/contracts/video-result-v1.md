@@ -13,4 +13,4 @@
 
 浏览器在视频呈现时间查找最近的**不晚于当前时刻**预测；超过 150 ms 不显示过期框。逐分析帧跳转仅定位已推理帧。不同机位暂不同步、不关联身份。
 
-执行 `labprism.contracts.validate_result` 检查时序、源片段映射、边界、有限值与实例 ID。每次运行保留结果/媒体/模型回执 SHA256、实现文件 hash 和源码 commit。目录拒绝覆盖，历史运行保留。
+执行 `labprism.contracts.validate_result` 检查时序、源片段映射、边界、有限值与实例 ID。每次运行保留结果/媒体/模型回执 SHA256、实现文件 hash 和源码 commit。源码归档没有 Git 时 commit/dirty 为 null，使用 `source_release` 保留包内源码提交及归档/版本清单 SHA256，不借用启动命令所在目录的 Git。目录拒绝覆盖，历史运行保留。

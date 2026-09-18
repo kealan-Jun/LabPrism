@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'src'))
-from labprism.artifacts import verify_release
+from labprism.artifacts import sha256, verify_release
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
         models.append(model)
     args.output.mkdir(parents=True,exist_ok=False)
     registry=args.output/'relocated-model-receipt.json'
-    registry.write_text(json.dumps({'schema_version':'labprism-model-receipt/1','release_manifest':str(release/'release.json'),'models':models},ensure_ascii=False,indent=2)+'\n')
+    registry.write_text(json.dumps({'schema_version':'labprism-model-receipt/1','source_release':{'manifest':str(release/'release.json'),'sha256':sha256(release/'release.json'),'git_commit':manifest['git_commit'],'source_archive_sha256':manifest['files']['code/source.tar.gz']['sha256']},'models':models},ensure_ascii=False,indent=2)+'\n')
     from labprism.perception.baseline import run
     run(member(entry['media']),args.output/args.clip,registry,entry['sample_hz'])
 
