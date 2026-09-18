@@ -31,6 +31,9 @@ def verify_run(directory):
         semantic = frame.get('semantic_map')
         if semantic and receipt['files'].get(semantic['file']) != semantic['sha256']:
             raise ValueError('Semantic map not bound to run receipt')
+        for item in frame.get('temporal_instances',[]):
+            if receipt['files'].get(item['mask']['file']) != item['mask']['sha256']:
+                raise ValueError('Temporal mask not bound to run receipt')
     if result.get('derived_from'):
         parent = result['derived_from']
         if receipt['files'].get('baseline-result.json') != parent['result_sha256']:

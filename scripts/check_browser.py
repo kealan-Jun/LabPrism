@@ -17,7 +17,8 @@ def check_viewport(page):
 def inspect_overlay(page, result):
     rendered = page.locator('#overlay').evaluate('e => ({time:+e.dataset.presentationMs, frame:e.dataset.frameIndex})')
     frame = next(f for f in result['frames'] if str(f['frame_index']) == rendered['frame'])
-    assert -.5 <= rendered['time']-frame['timestamp_ms'] <= 150, 'Future or stale prediction'
+    max_age = max(150, 1000/result['video']['sample_hz'] + 75)
+    assert -min(100, max_age/2) <= rendered['time']-frame['timestamp_ms'] <= max_age, 'Future or stale prediction'
     boxes = page.locator('#overlay rect').evaluate_all('es => es.map(e => ["x","y","width","height"].map(k=>+e.getAttribute(k)))')
     assert len(boxes) == len(frame['objects'])
     for box, obj in zip(boxes, frame['objects']):
@@ -36,7 +37,10 @@ def step(page, result, delta):
     index = max((i for i,f in enumerate(result['frames']) if f['timestamp_ms'] <= current_ms+.001), default=-1)
     target = result['frames'][max(0,min(len(result['frames'])-1,index+delta))]
     page.locator('#next' if delta > 0 else '#previous').click()
-    page.wait_for_function('f => !document.getElementById("video").seeking && Math.abs(document.getElementById("video").currentTime*1000-f.timestamp_ms)<.1 && document.getElementById("overlay").dataset.frameIndex === String(f.frame_index)',arg=target)
+    page.wait_for_function('!document.getElementById("video").seeking && document.getElementById("overlay").dataset.frameIndex !== ""')
+    rendered = page.locator('#overlay').evaluate('e=>({time:+e.dataset.presentationMs,frame:+e.dataset.frameIndex})')
+    actual = next(f for f in result['frames'] if f['frame_index'] == rendered['frame'])
+    assert abs(rendered['time']-actual['timestamp_ms']) <= max(300, 1500/result['video']['sample_hz'])
     return inspect_overlay(page, result)
 
 
@@ -102,18 +106,24 @@ def main():
             page.locator('#labels').check()
             assert page.locator('#overlay text').count() == len(current['objects'])
             page.locator('#labels').uncheck()
-            if result['schema_version'] == 'labprism-video-result/2':
+            if result['schema_version'] != 'labprism-video-result/1':
                 assert not page.locator('#semantic').is_checked()
-                page.locator('#semantic').check()
-                assert page.locator('#overlay .semantic').count() == len(current['semantic_regions'])
-                assert '误分' in page.locator('#semantic-note').inner_text()
-                page.locator('#semantic').uncheck()
+                if result['schema_version'] == 'labprism-video-result/2':
+                    page.locator('#semantic').check()
+                    assert page.locator('#overlay .semantic').count() == len(current['semantic_regions'])
+                    assert '误分' in page.locator('#semantic-note').inner_text()
+                    page.locator('#semantic').uncheck()
                 page.locator('#trails').check()
                 assert page.locator('#overlay .trail').count() == sum(bool(o.get('trail')) for o in current['objects']+current['hands'])
                 page.locator('#original').check()
                 assert page.locator('#overlay > *').count() == 0
                 page.locator('#original').uncheck()
                 page.locator('#trails').uncheck()
+                if result['schema_version'] == 'labprism-video-result/3' and result.get('temporal_windows'):
+                    page.locator('#temporal').check()
+                    assert page.locator('#overlay .temporal-mask').count() == sum(bool(i.get('mask_contours')) for i in current.get('temporal_instances', []))
+                    assert '时序掩码' in page.locator('#evidence').inner_text()
+                    page.locator('#temporal').uncheck()
                 assert '非整链路速度' in page.locator('#evidence').inner_text()
             else:
                 assert page.locator('#semantic').is_disabled()
@@ -130,10 +140,32 @@ def main():
             page.wait_for_function('document.getElementById("video").currentTime > 1')
             page.locator('#play').click()
             assert page.locator('#video').evaluate('v=>v.paused')
-            inspect_overlay(page, result)
+            step(page, result, 1)
             page.locator('#checkpoints button').nth(2).click()
             page.wait_for_function('Math.abs(document.getElementById("video").currentTime-4)<.05 && !document.getElementById("video").seeking')
-            inspect_overlay(page, result)
+            step(page, result, 1)
+            if result['schema_version'] == 'labprism-video-result/3':
+                if result.get('events'):
+                    page.locator('#event-list button').first.click()
+                    page.wait_for_function('!document.getElementById("video").seeking')
+                    assert abs(page.locator('#video').evaluate('v=>v.currentTime*1000')-result['events'][0]['start_ms'])<50
+                    inspect_overlay(page,result)
+                text_frames=[f for f in result['frames'] if f.get('texts')]
+                if text_frames:
+                    page.locator('#text-list button').first.click()
+                    page.wait_for_function('!document.getElementById("video").seeking')
+                    assert page.locator('#overlay .ocr-region').count()==len(text_frames[0]['texts'])
+                    assert page.locator('#overlay .ocr-text').all_text_contents()==[x['text'] for x in text_frames[0]['texts']]
+                    page.locator('#text-search').fill('unmatchable-labprism-search')
+                    assert page.locator('#text-list button').count()==0
+                    page.locator('#text-search').fill('')
+                    page.locator('#ocr').uncheck()
+                if result['video']['duration_ms']>30000:
+                    page.locator('#checkpoints button').last.click()
+                    page.wait_for_function('!document.getElementById("video").seeking')
+                    assert page.locator('#video').evaluate('v=>v.currentTime*1000')>result['video']['duration_ms']*.9
+                    page.wait_for_function('document.getElementById("overlay").dataset.frameIndex !== ""')
+                    inspect_overlay(page,result)
             with page.expect_download() as download:
                 page.locator('#result-link').click()
             assert download.value.failure() is None

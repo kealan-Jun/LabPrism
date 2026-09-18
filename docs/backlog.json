@@ -177,9 +177,11 @@
       ],
       "status": "in_progress",
       "evidence": [
-        "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json"
+        "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json",
+        "/home/x1/.local/share/labprism/runs/continuous-candidate-20260918-v1/weighing-first/receipt.json",
+        "/home/x1/.local/share/labprism/runs/temporal-candidate-20260918-v2/weighing-first/receipt.json"
       ],
-      "note": "因果一对一轨迹关联已在240帧运行；器材身份碎片化仍明显，无身份真值、无视频mask传播或遮挡恢复质量验收。"
+      "note": "连续候选已在2575帧运行相机补偿/外观关联，SAM2视频记忆已在646帧、13个窗口运行；窗口间身份重置。无身份真值、无时序质量验收，候选不晋级。"
     },
     {
       "id": "WEB-03",
@@ -193,9 +195,10 @@
       "status": "in_progress",
       "evidence": [
         "/home/x1/.local/share/labprism/evaluations/browser-20260918-v2/receipt.json",
-        "/home/x1/.local/share/labprism/evaluations/browser-candidate-20260918-v1/receipt.json"
+        "/home/x1/.local/share/labprism/evaluations/browser-candidate-20260918-v1/receipt.json",
+        "/home/x1/.local/share/labprism/evaluations/browser-continuous-probe-20260918-v11/receipt.json"
       ],
-      "note": "六组候选/基线回放、低分点隐藏、轨迹、语义失败检查、冲突证据通过Chrome；完整长视频及动作仍待。"
+      "note": "12组候选/基线回放、时序掩码、OCR多边形、二维接近事件、长视频和失败切换均通过Chrome；完整实验动作仍待。"
     },
     {
       "id": "REL-01",
