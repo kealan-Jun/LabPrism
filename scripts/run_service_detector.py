@@ -65,7 +65,8 @@ def run(args):
     model = {'id': 'visioncortex-service-' + role.value + '-' + args.engine_sha256[:12],
         'task': 'object_detection', 'role': role.value, 'path': str(engine),
         'sha256': args.engine_sha256, 'backend': 'TensorRT CUDA FP16',
-        'status': 'current_service_model_replay', 'code_revision': subprocess.check_output(
+        'status': 'candidate_model_replay' if args.candidate else 'current_service_model_replay',
+        'code_revision': subprocess.check_output(
             ['git', 'rev-parse', 'HEAD'], cwd=args.producer_repo, text=True).strip()}
     result = {'schema_version': 'labprism-video-result/3', 'created_at': datetime.now(timezone.utc).isoformat(),
         'source': parent['source'], 'video': parent['video'], 'models': [model], 'frames': [], 'events': [],
@@ -73,7 +74,7 @@ def run(args):
         'mode': 'offline_sampled_inference', 'prediction_status': 'unreviewed_model_proposals',
         'configuration': {}, 'derived_from': {'result_sha256': sha256(args.parent / 'result.json'),
         'receipt_sha256': sha256(args.parent / 'receipt.json')},
-        'limitations': ['Current production detector on existing exposed development video; not independent accuracy',
+        'limitations': ['Configured detector on existing exposed development video; not independent accuracy',
             'Only detections recomputed here; old masks, hand pose, tracks, relations and actions are not relabelled as new',
             'Parent PTS/timebase retained after exact clip, ordinal, RGB and decoder-time verification']}
     targets = {f['frame_index']: f for f in parent['frames']}
@@ -178,4 +179,5 @@ if __name__ == '__main__':
     for name in ['parent', 'output', 'producer-repo', 'config', 'gpu-lock']:
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--engine-sha256', required=True)
+    p.add_argument('--candidate', action='store_true', help='Record a candidate replay; does not claim a production deployment')
     run(p.parse_args())
