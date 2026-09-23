@@ -7,6 +7,22 @@ from labprism.artifacts import sha256
 from labprism.tracking.association import overlap
 
 
+def match_localization(truth_boxes, prediction_boxes, iou=.5):
+    """Maximize qualified hand/ROI matches before maximizing their IoU sum.
+
+    This is class-agnostic localization, distinct from confidence-ordered AP.
+    Rejecting low-IoU pairs only after assignment can discard a valid second hand.
+    """
+    import numpy as np
+    from scipy.optimize import linear_sum_assignment
+    if not 0<iou<=1:raise ValueError('IoU gate must be within (0,1]')
+    if not truth_boxes or not prediction_boxes:return {}
+    costs=np.asarray([[1-overlap(g,p) for p in prediction_boxes] for g in truth_boxes])
+    forbidden=max(costs.shape)+1.
+    costs=np.where(costs<=1-iou,costs,forbidden)
+    return {int(i):int(j) for i,j in zip(*linear_sum_assignment(costs)) if costs[i,j]<forbidden}
+
+
 def match_detections(predictions, truth, iou=.5):
     """Confidence-ordered, class-aware, one-to-one matching; this is not AP."""
     used = set()

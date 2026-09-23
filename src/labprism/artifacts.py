@@ -28,6 +28,9 @@ def verify_run(directory):
                 raise ValueError(f'Run member identity mismatch: {name}')
     result = validate_result(json.loads((directory/'result.json').read_text()))
     for frame in result['frames']:
+        for observation in frame.get('ocr_observations', []):
+            if receipt['files'].get(observation['image_file']) != observation['image_sha256']:
+                raise ValueError('Video OCR crop not bound to run receipt')
         semantic = frame.get('semantic_map')
         if semantic and receipt['files'].get(semantic['file']) != semantic['sha256']:
             raise ValueError('Semantic map not bound to run receipt')
@@ -106,3 +109,21 @@ def receive_media(source, destination):
         'purpose': 'local_diagnostic_inference', 'public_release_authorized': False,
     }, ensure_ascii=False, indent=2) + '\n')
     return receipt
+def freeze_sources(project, paths, destination):
+    """Bind an inference attempt to the exact source bytes before long processing."""
+    import hashlib
+    import zipfile
+    project = Path(project).resolve()
+    sources = {}
+    for item in paths:
+        path = Path(item)
+        if path.is_symlink() or not path.resolve().is_relative_to(project):
+            raise ValueError('Source snapshot path outside project')
+        name = str(path.resolve().relative_to(project))
+        sources[name] = path.read_bytes()
+    if not sources:
+        raise ValueError('Empty source snapshot')
+    with zipfile.ZipFile(destination, 'x', zipfile.ZIP_DEFLATED) as bundle:
+        for name, content in sorted(sources.items()):
+            bundle.writestr(name, content)
+    return {name: hashlib.sha256(content).hexdigest() for name, content in sources.items()}
