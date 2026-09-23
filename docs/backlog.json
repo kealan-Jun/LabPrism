@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 67,
+  "version": 68,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -164,8 +164,27 @@
         "SYS-02",
         "AW-03"
       ],
-      "status": "todo",
-      "evidence": []
+      "status": "in_progress",
+      "evidence": [
+        "docs/SCAN-CANCELLATION-20260924.zh-CN.md"
+      ],
+      "latest_scan_cancellation": {
+        "date": "2026-09-24",
+        "commit": "6d5c84bfcd8ae1276814b3980622e2cc0161baba",
+        "production_pid": 2142382,
+        "deployment_status": "actual_model_load_and_scan_progress_verified",
+        "tests_passed": 209,
+        "tests_skipped": 4,
+        "real_frames": 320,
+        "byte_identical_ledger": true,
+        "failure_decoder_children_reaped": 2,
+        "model_weights_changed": false,
+        "capture_web_unchanged": true,
+        "long_running_oom_resolution": null,
+        "report": "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/scan-cancellation-20260924-v1",
+        "observed_model_loads": 6
+      }
     },
     {
       "id": "SYS-04",
@@ -370,7 +389,7 @@
       }
     }
   ],
-  "updated_at": "2026-09-23T22:28:58.139584+00:00",
+  "updated_at": "2026-09-23T23:42:41.947434+00:00",
   "priority_note": "完整产品目标继续：当前v8检测已接CUDA手姿，v5m已接官方SAM2时序结果。继续针对握拳/遮挡、密集器材与分割错误补监督并训练；不以覆盖量冒充精度。v6分割未超过现用基线，保留最佳已验证服务模型。",
   "latest_scan_runtime_iteration": {
     "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
@@ -433,5 +452,22 @@
     "pose_promotion": false,
     "browser": "passed: current model identity, original/layers, same-time comparison, playback/step/seek,390px",
     "report": "docs/CURRENT-PIPELINE-20260924.zh-CN.md"
+  },
+  "latest_scan_cancellation": {
+    "date": "2026-09-24",
+    "commit": "6d5c84bfcd8ae1276814b3980622e2cc0161baba",
+    "production_pid": 2142382,
+    "deployment_status": "actual_model_load_and_scan_progress_verified",
+    "tests_passed": 209,
+    "tests_skipped": 4,
+    "real_frames": 320,
+    "byte_identical_ledger": true,
+    "failure_decoder_children_reaped": 2,
+    "model_weights_changed": false,
+    "capture_web_unchanged": true,
+    "long_running_oom_resolution": null,
+    "report": "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
+    "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/scan-cancellation-20260924-v1",
+    "observed_model_loads": 6
   }
 }
