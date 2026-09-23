@@ -112,3 +112,16 @@ def test_layer_flags_require_actual_outputs_not_merely_objects(tmp_path):
     assert index['layers']['trails'] is False
     assert index['layers']['hands'] is False
     assert index['environment']['actual_execution_providers']['detection']=='PyTorch CPU'
+
+
+def test_legacy_per_frame_nonexecution_is_preserved_without_hiding_mixed_coverage():
+    r=v3_result();r['models']=[]
+    r['frames'][0]['availability']['hands']='not_run'
+    assert 'keypoints' not in browser_projection(r).get('output_statuses',{})
+    r['frames'][0]['hands']=[]
+    projected=browser_projection(r)
+    assert projected['output_statuses']['keypoints']['state']=='not_run'
+    assert 'output_statuses' not in r
+    other=copy.deepcopy(r['frames'][0]);other['availability']['hands']='predicted'
+    r['frames'].append(other)
+    assert 'keypoints' not in browser_projection(r).get('output_statuses',{})

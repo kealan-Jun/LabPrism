@@ -164,6 +164,17 @@ def validate_result(result):
                 seed=frames.get(item['seed_frame_index'])
                 if not seed or not any(o['id']==item['seed_object_id'] and o['label']==item['label'] for o in seed['objects']):
                     raise ValueError('Temporal mask prompt is not bound to a real detection')
+                group=item.get('proposal_group')
+                if group:
+                    objects={o['id']:o for o in seed['objects']}
+                    members=group['members'];member_ids=[m['id'] for m in members]
+                    expected_status='ambiguous_model_proposals' if len({m['label'] for m in members})>1 else 'model_proposal'
+                    if (group.get('physical_identity_confirmed') is not False
+                        or group.get('representative_id')!=item['seed_object_id']
+                        or group.get('label_status')!=expected_status or group.get('selected') is not True
+                        or item['seed_object_id'] not in member_ids or len(member_ids)!=len(set(member_ids))
+                        or any(m['id'] not in objects or any(m[k]!=objects[m['id']][k] for k in ['label','confidence','box']) for m in members)):
+                        raise ValueError('Temporal proposal group differs from seed detections or claims resolved identity')
         for event in result.get('events',[]):
             if (event['id'] in event_ids or event['type']!='hand_object_proximity_2d'
                     or not 0<=event['start_ms']<event['end_ms']<video['duration_ms']

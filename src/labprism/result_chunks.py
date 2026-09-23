@@ -17,6 +17,17 @@ def browser_projection(result):
     out['source']['experiment']={k:v for k,v in result['source'].get('experiment',{}).items()
         if k in {'experiment_id','experiment_title','recording_date'}}
     out['models']=[{k:v for k,v in model.items() if k in {'id','task','sha256','parent_sha256','role','license','backend','hash_basis'}} for model in result['models']]
+    # Historical v3 stage receipts often express availability only per frame.
+    # Preserve explicit non-execution instead of presenting it as zero detections.
+    empty={'keypoints':all(not f['hands'] for f in result['frames']),
+           'tracks':all(not o.get('track_id') for f in result['frames'] for o in [*f['objects'],*f['hands']]),
+           'readouts':all(not f.get('texts') and not f.get('ocr_observations') for f in result['frames']),
+           'events':not result.get('events') and all(not f.get('events') for f in result['frames']),
+           'instance_masks':all(not o.get('mask_contours') for f in result['frames'] for o in f['objects'])}
+    for task,layer in {'keypoints':'hands','tracks':'tracking','readouts':'ocr',
+                       'events':'events','instance_masks':'instance_segmentation'}.items():
+        if result['frames'] and empty[task] and all(f.get('availability',{}).get(layer)=='not_run' for f in result['frames']):
+            out.setdefault('output_statuses',{}).setdefault(task,{'state':'not_run','reason':'该模块在所选运行的全部采样帧中均未执行'})
     replay=result.get('configuration',{}).get('trained_hand_replay')
     if replay:
         out['model_usage']={'hand_pose':replay['model_id']}

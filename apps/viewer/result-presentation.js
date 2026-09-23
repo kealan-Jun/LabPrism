@@ -34,6 +34,7 @@
   function runSummary(result){
     if(result.ocr_integration?.mode==='received_sparse_frame_observations')return '接收既有视觉结果与稀疏 OCR；组合流水线速度未测量';
     const metrics=result.metrics||{};
+    if((result.models||[]).some(m=>m.task==='video_instance_segmentation')&&Number.isFinite(metrics.stage_seconds)&&Number.isFinite(metrics.temporal_frames))return `视频分割阶段处理 ${metrics.temporal_frames} 帧，用时 ${Number(metrics.stage_seconds.toFixed(2))} 秒；不含检测、手姿与其他模块`;
     if((result.models||[]).some(m=>m.task==='joint_detection_instance_segmentation_candidate')&&Number.isFinite(metrics.processing_fps))return `解码、检测与实例分割 ${Number(metrics.processing_fps.toFixed(3))} 分析帧/s；非完整流水线速度`;
     if(Number.isFinite(metrics.candidate_processing_fps))return `新增阶段 ${Number(metrics.candidate_processing_fps.toFixed(3))} 分析帧/s；非完整流水线速度`;
     if(Number.isFinite(metrics.sampled_pipeline_fps))return `本轮已启用模块 ${Number(metrics.sampled_pipeline_fps.toFixed(3))} 分析帧/s；未运行模块不计入`;

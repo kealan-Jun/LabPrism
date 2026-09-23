@@ -75,8 +75,11 @@ function render(force=false) {
   $("frame-stamp").textContent=frame?`${roleLabel(data.source.camera_role)} / 源视频 ${(frame.source_timestamp_ms/1000).toFixed(2)} s`:"尚无分析帧";
   $("counts").textContent=valid?ResultPresentation.frameCounts(frame,data):"当前帧未分析";
   const regions=frame?.semantic_regions || [];
+  const names=data.ontology?.display_names || {};
   $("semantic-note").textContent=$("semantic").checked ? `研究候选，类别质量尚未验收。当前类别：${regions.map(r=>r.label).join("、")}。颜色按类别编号分配；轮廓简化，原始像素图保留在运行包。` : "";
   $("conflicts").textContent=valid ? ((frame.conflicting_objects || frame.rejected_objects || []).map(o=>`${o.display_name || o.label}：与笔记本模型冲突，${frame.conflicting_objects ? "保留原检测" : "旧候选曾过滤"}，待复核`).join("；") || "本帧无已记录的类别冲突。") : "";
+  const temporalConflicts=valid ? (frame.temporal_instances || []).filter(o=>o.proposal_group?.label_status==="ambiguous_model_proposals") : [];
+  if(temporalConflicts.length)$("conflicts").textContent=`${temporalConflicts.length} 个时序目标类别待确认：${temporalConflicts.map(o=>[...new Set(o.proposal_group.members.map(m=>names[m.label]||m.label))].join(" / ")).join("；")}。重合提示共用一份轮廓，原始检测均保留。`;
   $("text-observation").textContent=valid ? (frame.availability.ocr==="not_run" ? "本轮未执行文字识别。" : frame.availability.ocr==="not_sampled" ? "本帧未采样文字；文字列表可跳到实际识别帧。" : (frame.texts || []).map(x=>`${x.text}（${(x.score*100).toFixed(0)}%）`).join("；") || "本帧无文字输出。") : "当前时刻无文字观察。";
   renderVideoOcrEvidence(valid ? frame : null);
   if(!valid||$("original").checked)return;
@@ -91,7 +94,9 @@ function render(force=false) {
   if($("temporal").checked)(frame.temporal_instances || []).forEach(item=>{
     const d=(item.mask_contours || []).map(c=>"M"+c.map(p=>p.join(",")).join("L")+"Z").join(" ");
     if(!d)return;
-    element("path",{class:"temporal-mask",d,fill:"#ffcf5c","fill-opacity":.18,stroke:"#ffcf5c","stroke-width":1.5,"stroke-dasharray":"5 3","fill-rule":"evenodd"});
+    const ambiguous=item.proposal_group?.label_status==="ambiguous_model_proposals";
+    const path=element("path",{class:`temporal-mask${ambiguous?" ambiguous":""}`,d,fill:ambiguous?"#ff9c5c":"#ffcf5c","fill-opacity":.18,stroke:ambiguous?"#ff9c5c":"#ffcf5c","stroke-width":1.5,"stroke-dasharray":"5 3","fill-rule":"evenodd"});
+    element("title",{},path).textContent=ambiguous ? `类别待确认：${[...new Set(item.proposal_group.members.map(m=>names[m.label]||m.label))].join(" / ")}` : `${item.display_name||item.label} · 时序模型提议`;
   });
   const selected=$("object-select").value;
   frame.objects.forEach((o,i)=>{

@@ -71,6 +71,7 @@ def test_v3_rejects_unbound_ocr_events_and_temporal_prompts():
     validate_result(bad)
     bad=copy.deepcopy(r);bad['frames'][0]['relations'][0]['distance_px']=16
     with pytest.raises(ValueError):validate_result(bad)
+
     bad=copy.deepcopy(r);bad['events']=[{'id':'proximity-1','type':'hand_object_proximity_2d',
         'start_ms':0,'end_ms':600,'hand_track_id':'hand-1','object_track_id':'object-1',
         'physical_contact':None,'step':None,'status':'unreviewed_geometric_proposal','evidence':[]}]
@@ -81,3 +82,23 @@ def test_v3_rejects_unbound_ocr_events_and_temporal_prompts():
         'mask':{'file':'temporal-000000-00.png','sha256':'a'*64},'confidence':None,
         'status':'unreviewed_model_proposal'}]
     with pytest.raises(ValueError):validate_result(bad)
+
+
+@pytest.mark.parametrize('bad_field', ['identity', 'status', 'member', 'duplicate'])
+def test_temporal_ambiguity_stays_bound_and_unresolved(bad_field):
+    r=v3_result();f=r['frames'][0];first=f['objects'][0]
+    second=copy.deepcopy(first);second.update(id='b',label='sample_bottle',track_id=None)
+    f['objects'].append(second)
+    group={'representative_id':'a','physical_identity_confirmed':False,'selected':True,
+           'label_status':'ambiguous_model_proposals',
+           'members':[{k:o[k] for k in ['id','label','confidence','box']} for o in [first,second]]}
+    f['temporal_instances']=[{'id':'w0-object0','label':'beaker','seed_frame_index':0,'seed_object_id':'a',
+        'state':'prompted','visible_pixels':3,'mask_contours':[[[0,0],[1,0],[1,1]]],
+        'mask':{'file':'temporal-000000-00.png','sha256':'a'*64},'confidence':None,
+        'status':'unreviewed_model_proposal','proposal_group':group}]
+    validate_result(r)
+    if bad_field=='identity':group['physical_identity_confirmed']=True
+    if bad_field=='status':group['label_status']='model_proposal'
+    if bad_field=='member':group['members'][1]['label']='invented'
+    if bad_field=='duplicate':group['members'].append(copy.deepcopy(group['members'][0]))
+    with pytest.raises(ValueError,match='Temporal proposal group'):validate_result(r)

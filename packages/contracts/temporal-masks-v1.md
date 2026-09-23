@@ -8,15 +8,21 @@ not new training or an implicit promotion. Original labels/training stay in AW.
 Each original frame is checked against the parent dimensions, RGB hash, PTS and
 time base before JPEG95 export. The JPEG's bytes and decoded pixels are separately
 pinned: it is a declared input derivative, not an identical-pixel replay. Seed
-selection is the three highest-confidence non-hand boxes at the beginning of each
-50-sample window. Windows without seeds remain explicitly not_prompted.
+selection defaults to three highest-confidence non-hand boxes at the beginning of
+each 50-sample window. `--seed-policy geometry_diverse --max-objects 8` reuses the
+upstream complete-link geometry grouping and class-diverse selection: mutually
+overlapping IoU≥0.85 boxes share one provisional seed while all hypotheses remain
+in `proposal_group`. Conflicting classes stay explicitly unresolved. Windows without
+seeds remain not_prompted. This grouping never confirms physical identity.
 
 The upstream receipt binds native 0/1 PNG masks, contours with holes, source and
 camera identity, model/checkpoint, implementation, inputs and request. The consumer
 rejects changed files, omitted/repeated frames, changed PTS/pixels/camera, undeclared
 quality promotion, wrong seeds, wrong raster dimensions or pixel counts. It retains
 the request, upstream result/receipt, original parent result/receipt and unchanged
-parent layers. `verify_run` remains the final accepted-artifact gate.
+parent layers. Seed-group members must exactly match original detector instances;
+resolved-identity or false resolved-class claims are rejected. `verify_run` remains
+the final accepted-artifact gate. Original raw detections are not silently removed.
 
 The existing video-result/3 and /4 `temporal_instances` and inspection toggle render
 these masks. IDs reset per window; propagated masks are proposals, not physical
@@ -26,3 +32,10 @@ the added SAM2 model. No production weights are changed by this entry point.
 New media, input derivatives, masks and logs go to the identity-checked NAS; code
 and checkpoints remain local. CUDA memory and the existing AW GPU lock are checked;
 production analysis/capture/Web are not paused. Browser delivery is loopback only.
+
+`scripts/run_service_detector.py` refreshes a frozen parent video's complete sampled
+detector output using the current configured VisionCortex `RoleScanner`, TensorRT
+engine and duplicate policy. It pins engine SHA, actual CUDA backend and execution
+batch size; verifies decoded RGB/ordinal/time against the parent; and excludes old
+pose/relations/events from the new result. Those old outputs remain in the parent
+receipt. This is inference integration, not a new trainer or service restart.

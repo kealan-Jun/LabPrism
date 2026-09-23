@@ -50,6 +50,17 @@ def validate_handoff(directory, request_path, parent):
             raise ValueError('Temporal seed identity changed')
         for instance in instances:
             mask = instance['mask']
+            prompt = prompts[instance['seed_object_id']]
+            if instance.get('proposal_group') != prompt.get('proposal_group'):
+                raise ValueError('Temporal proposal group changed')
+            group = prompt.get('proposal_group')
+            if group:
+                seed_objects = {o['id']: o for o in parent_frames[window['frames'][0]['frame_index']]['objects']}
+                if group['physical_identity_confirmed'] is not False or group['representative_id'] != prompt['id']:
+                    raise ValueError('Temporal group identity was promoted')
+                for member in group['members']:
+                    if member['id'] not in seed_objects or any(member[k] != seed_objects[member['id']][k] for k in ['label', 'confidence', 'box']):
+                        raise ValueError('Group member differs from source detector')
             if (receipt['files'].get(mask['file']) != mask['sha256']
                     or instance['seed_frame_index'] != window['frames'][0]['frame_index']
                     or instance['label'] != prompts[instance['seed_object_id']]['label']):

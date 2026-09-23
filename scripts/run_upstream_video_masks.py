@@ -13,7 +13,7 @@ import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
-from labprism.artifacts import sha256, verify_run
+from labprism.artifacts import freeze_sources, sha256, verify_run
 from labprism.perception.trained_hand import verify_decoded_frame
 from labprism.tracking.upstream_video_masks import validate_handoff
 
@@ -35,6 +35,11 @@ def run(args):
     from PIL import Image
 
     validate_destination(args.output)
+    if not 1 <= args.max_objects <= 8:
+        raise ValueError('Expected 1–8 temporal objects per window')
+    if args.seed_policy == 'geometry_diverse':
+        sys.path.insert(0, str(args.producer_repo / 'src'))
+        from visioncortex.temporal_prompts import select_temporal_prompts
     parent = verify_run(args.parent)
     if parent['source']['split'] not in {'train', 'val'}:
         raise ValueError('Development input required')
@@ -44,17 +49,22 @@ def run(args):
     request = {'schema_version': 'visioncortex-temporal-mask-request/1',
         'source': parent['source'], 'parent_result_sha256': sha256(args.parent / 'result.json'),
         'dimensions': [parent['video']['width'], parent['video']['height']],
-        'input_transform': {'encoding': 'JPEG', 'quality': 95, 'resize': False}, 'windows': []}
+        'input_transform': {'encoding': 'JPEG', 'quality': 95, 'resize': False},
+        'seed_policy': args.seed_policy, 'maximum_objects': args.max_objects, 'windows': []}
     targets = {}
     for offset in range(0, len(parent['frames']), 50):
         subset = parent['frames'][offset:offset + 50]
-        prompts = sorted((o for o in subset[0]['objects'] if o['label'] not in {'hand', 'gloved_hand'}),
-                         key=lambda o: -o['confidence'])[:3]
+        candidates = [o for o in subset[0]['objects'] if o['label'] not in {'hand', 'gloved_hand'}]
+        if args.seed_policy == 'geometry_diverse':
+            prompts, selection = select_temporal_prompts(candidates, max_objects=args.max_objects)
+        else:
+            prompts = sorted(candidates, key=lambda o: -o['confidence'])[:args.max_objects]
+            selection = None
         if not prompts:
             continue
         window_id = len(request['windows'])
-        window = {'id': window_id, 'prompts': [{k: p[k] for k in ['id', 'label', 'box', 'display_name'] if k in p}
-                                             for p in prompts], 'frames': []}
+        window = {'id': window_id, 'prompts': [{k: p[k] for k in ['id', 'label', 'box', 'display_name', 'proposal_group'] if k in p}
+                                             for p in prompts], 'frames': [], 'prompt_selection': selection}
         (inputs / 'frames' / f'{window_id:04d}').mkdir(parents=True)
         for position, frame in enumerate(subset):
             row = {k: frame[k] for k in ['frame_index', 'timestamp_ms', 'clip_pts', 'time_base', 'rgb_sha256']}
@@ -79,6 +89,17 @@ def run(args):
     if seen != targets.keys():
         raise ValueError('Incomplete exact source decode')
     request_path = inputs / 'request.json'
+    repo = Path(__file__).resolve().parents[1]
+    snapshot = Path(json.loads((repo / 'configs/project.json').read_text())['data_root_default']) / 'source-snapshots'
+    implementation_id = sha256(Path(__file__))[:16] + '-' + request['parent_result_sha256'][:16]
+    request['implementation'] = {'consumer': freeze_sources(repo,
+        [Path(__file__), repo / 'src/labprism/tracking/upstream_video_masks.py'],
+        snapshot / ('temporal-consumer-' + implementation_id + '.zip'))}
+    if args.seed_policy == 'geometry_diverse':
+        request['implementation']['selector'] = freeze_sources(args.producer_repo,
+            [args.producer_repo / 'src/visioncortex/temporal_prompts.py',
+             args.producer_repo / 'src/visioncortex/temporal_segmentation.py'],
+            snapshot / ('temporal-selector-' + implementation_id + '.zip'))
     request_path.write_text(json.dumps(request, ensure_ascii=False, indent=2))
     print(json.dumps({'prepared_frames': len(seen), 'windows': len(request['windows'])}), flush=True)
     lock = args.gpu_lock.open('a')
@@ -108,7 +129,8 @@ def receive(args, request_path, producer, parent):
                               'receipt_sha256': sha256(args.parent / 'receipt.json')}
     result['parent_metrics'] = result['metrics']
     result['configuration'].update(temporal_mask_propagation=True, temporal_window_frames=50,
-        temporal_max_objects=3, temporal_input_transform=request['input_transform'],
+        temporal_max_objects=request.get('maximum_objects', 3),
+        temporal_seed_policy=request.get('seed_policy', 'confidence'), temporal_input_transform=request['input_transform'],
         temporal_producer_receipt_sha256=sha256(producer / 'receipt.json'))
     predictions = {f['frame_index']: f for f in handoff['frames']}
     for frame in result['frames']:
@@ -117,7 +139,8 @@ def receive(args, request_path, producer, parent):
     result['temporal_windows'] = [{'id': f'window-{w["id"]}',
         'first_frame_index': w['frames'][0]['frame_index'], 'last_frame_index': w['frames'][-1]['frame_index'],
         'source_frame_indices': [f['frame_index'] for f in w['frames']],
-        'prompt_ids': [p['id'] for p in w['prompts']], 'identity_across_windows': False}
+        'prompt_ids': [p['id'] for p in w['prompts']], 'identity_across_windows': False,
+        'ambiguous_seed_groups': sum(p.get('proposal_group', {}).get('label_status') == 'ambiguous_model_proposals' for p in w['prompts'])}
         for w in request['windows']]
     runtime = handoff['model']
     expected = json.loads(args.config.read_text())['models']['temporal_participant_segmentation']
@@ -135,6 +158,7 @@ def receive(args, request_path, producer, parent):
         'generalization': None, 'full_pipeline_fps': None, 'npu_fps': None}
     result.setdefault('limitations', []).extend([
         'Temporal masks are unreviewed proposals; identity resets every 50 sampled frames',
+        'Geometric grouping limits repeated prompts; conflicting classes remain unresolved and raw detector proposals are retained',
         'Official SAM2 input is a declared JPEG95 derivative; original PTS/RGB and derived file/RGB hashes retained',
         'No cross-camera identity, calibrated physical contact or action confirmation inferred',
         'Existing development footage has training exposure; no independent generalization claim'])
@@ -174,6 +198,8 @@ if __name__ == '__main__':
     for name in ['parent', 'output', 'producer-repo', 'python', 'config', 'gpu-lock']:
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--receive-only', action='store_true')
+    p.add_argument('--max-objects', type=int, default=3)
+    p.add_argument('--seed-policy', choices=['confidence', 'geometry_diverse'], default='confidence')
     args = p.parse_args()
     if args.receive_only:
         receive(args, args.output / 'input/request.json', args.output / 'producer', verify_run(args.parent))

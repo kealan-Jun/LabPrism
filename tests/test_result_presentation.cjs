@@ -3,6 +3,12 @@ const assert=require('node:assert/strict');
 const {initialSelection,modelNames,sourceUse,outputSummary,runSummary}=require('../apps/viewer/result-presentation.js');
 const {poseEvidence}=require('../apps/viewer/result-presentation.js');
 const clips=[{id:'a',camera_id:'camera-1'},{id:'b',camera_id:'camera-2'}];
+test('temporal timing requires current-stage frame count and never borrows parent speed',()=>{
+  const result={models:[{id:'sam2',task:'video_instance_segmentation'}],metrics:{stage_seconds:235.6397,temporal_frames:667},parent_metrics:{processing_fps:100}};
+  assert.match(runSummary(result),/667 帧，用时 235.64 秒；不含检测/);
+  delete result.metrics.temporal_frames;
+  assert.doesNotMatch(runSummary(result),/235.64|100/);
+});
 test('unexecuted tasks are distinct from zero detections and unknown metrics',()=>{
   const p=require('../apps/viewer/result-presentation.js');
   const r={output_statuses:{keypoints:{state:'not_run'},events:{state:'not_run'}},metrics:{}};
