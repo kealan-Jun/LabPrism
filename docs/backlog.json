@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 66,
+  "version": 67,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -334,9 +334,40 @@
         "/home/x1/.local/share/labprism/evaluations/candidate-review-20260918-v2/review.json",
         "/home/x1/.local/share/labprism/evaluations/detection-regression-20260918-v1/report.json",
         "/home/x1/.local/share/labprism/evaluations/detection-resolution-20260918-v1/report.json",
-        "/mnt/realityloop-nas/LabPrism/receipts/model-candidates-20260918-v1-replay.json"
+        "/mnt/realityloop-nas/LabPrism/receipts/model-candidates-20260918-v1-replay.json",
+        "docs/POSE-EXPANSION-20260924.zh-CN.md"
       ],
-      "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。"
+      "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。",
+      "latest_pose_expansion": {
+        "status": "gpu_trained_actual_video_and_browser_verified",
+        "train_images": 287,
+        "pseudo_images": 275,
+        "pseudo_hands": 308,
+        "pseudo_points": 4568,
+        "reviewed_train_points": 144,
+        "reviewed_val_points": 15,
+        "new_reviewed_labels": 0,
+        "epochs": 12,
+        "actual_batch": 32,
+        "selected_epoch": 2,
+        "gpu_training_seconds": 16.362904165995133,
+        "gt_roi_scored_known_points": [
+          135,
+          152
+        ],
+        "gt_roi_scored_validation_points": [
+          13,
+          13
+        ],
+        "full_video_frames": 761,
+        "full_video_pose_observations": [
+          1063,
+          1198
+        ],
+        "production_pose_deployment": false,
+        "remaining": "Fist/overlap joint visibility errors; tiny development label set; integrate into VisionCortex workflow, not a second website workbench",
+        "evidence": "docs/POSE-EXPANSION-20260924.zh-CN.md"
+      }
     }
   ],
   "updated_at": "2026-09-23T22:28:58.139584+00:00",

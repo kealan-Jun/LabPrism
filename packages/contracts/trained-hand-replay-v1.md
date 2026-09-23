@@ -12,6 +12,8 @@ The output uses the existing inference-run/1 receipt, including the copied `hand
 
 Entry point: `scripts/run_trained_hand.py --request REQUEST.json --output NEW_DIRECTORY`.
 
+The consumer also accepts `annotation-workbench-expanded-hand-result/1`: a producer-owned full-network run with explicit mixed project labels and teacher proposals. Its `labels_sha256` pins the versioned partial-pose dataset, not a reviewed-label export. The receipt preserves training roles, proposal identity, unchanged frozen batch-normalization statistics, ONNX parity and per-epoch coverage. Its target role is the only role qualified for this replay; mixed-view training does not establish third-person accuracy. Unknown joints have zero supervision. Acceptance into a local replay is not model promotion.
+
 ## Replay / 2: current detection with separate pose provenance
 
 `labprism-trained-hand-replay/2` additionally requires `pose_lineage`, a previous verified run pinned by `path`, `result_sha256` and `receipt_sha256`. This permits a new detector-only parent without pretending it ran the old pose model. The lineage run must contain the producer's approved parent pose model and match the current run's complete source/video metadata and every sampled frame's ordinal, timestamps, PTS, time base and RGB hash. Unrelated video, missing/reordered samples, changed artifacts and role mismatches reject the request.

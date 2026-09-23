@@ -12,6 +12,7 @@ def validate_training_receipt(receipt, *, role, parent_sha256, labels_sha256):
         not in {
             "annotation-workbench-hand-head-result/1",
             "annotation-workbench-full-hand-result/1",
+            "annotation-workbench-expanded-hand-result/1",
         }
         or receipt.get("status") != "completed"
         or receipt.get("task_type") != "hand_pose"
@@ -41,6 +42,19 @@ def validate_training_receipt(receipt, *, role, parent_sha256, labels_sha256):
             or receipt.get("inference_provider") != ["CPUExecutionProvider"]
         ):
             raise ValueError("Unverified full-network inference artifact")
+    if receipt["schema_version"] == "annotation-workbench-expanded-hand-result/1":
+        roles = receipt.get("training_roles")
+        if (
+            not isinstance(roles, list)
+            or role not in roles
+            or any(r not in {"first_person", "third_person"} for r in roles)
+            or receipt.get("truth_status")
+            != "mixed_project_reviewed_and_explicit_teacher_proposals"
+            or receipt.get("independent_ground_truth") is not False
+            or receipt.get("dataset", {}).get("sha256") != labels_sha256
+            or receipt.get("all_train_hands_covered_each_epoch") is not True
+        ):
+            raise ValueError("Expanded hand training must preserve proposal and role provenance")
 
 
 def validate_head_receipt(receipt, **expected):

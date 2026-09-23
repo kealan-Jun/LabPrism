@@ -86,3 +86,35 @@ def test_full_network_requires_its_own_verified_training_scope(change):
             )
     with pytest.raises(ValueError, match="Output-head-only"):
         check(data)
+
+
+@pytest.mark.parametrize("change", [None, "truth", "role", "dataset", "coverage"])
+def test_expanded_pose_preserves_mixed_supervision_and_target_role(change):
+    data = receipt()
+    data.update(
+        schema_version="annotation-workbench-expanded-hand-result/1",
+        training_scope="full_network_frozen_bn_statistics",
+        batch_norm_statistics_unchanged=True,
+        export_max_abs_error=1e-5,
+        inference_provider=["CPUExecutionProvider"],
+        training_roles=["first_person", "third_person"],
+        truth_status="mixed_project_reviewed_and_explicit_teacher_proposals",
+        independent_ground_truth=False,
+        dataset={"sha256": "labels"},
+        all_train_hands_covered_each_epoch=True,
+    )
+    mutations = {
+        "truth": ("independent_ground_truth", True),
+        "role": ("training_roles", ["third_person"]),
+        "dataset": ("dataset", {"sha256": "changed"}),
+        "coverage": ("all_train_hands_covered_each_epoch", False),
+    }
+    if change:
+        key, value = mutations[change]
+        data[key] = value
+        with pytest.raises(ValueError, match="provenance"):
+            validate_training_receipt(data, role="first_person", parent_sha256="parent", labels_sha256="labels")
+    else:
+        validate_training_receipt(data, role="first_person", parent_sha256="parent", labels_sha256="labels")
+        with pytest.raises(ValueError):
+            validate_training_receipt(data, role="third_person", parent_sha256="parent", labels_sha256="labels")
