@@ -53,3 +53,7 @@ VisionCortex上游新增显式按角色类别表，允许编号兼容的追加�
 仍需继续：扩大真实独立验证覆盖；减少前臂、反光和器材相似类误报；补足完整手姿/遮挡和分割质量；继续训练可证明改善的任务模型；将最佳版本接到实际服务及官网真实结果。模型计数、网页完成度、独立泛化、全天多视角覆盖和全产品验收分别报告。
 
 原始证据根：`/mnt/realityloop-nas/AnnotationWorkbench/datasets/labprism-source-expansion-20260923-v1/bulk-annotation-v1/`。关键目录：`training-v1`、`training-v2`、`training-v3`、`runtime-acceptance-v2`、`runtime-video-v2`、`runtime-export-first-v3`、`deployment-third-v2`。
+
+## 20:31 CST 运行完整性修复
+
+第三人称新粗扫和精扫引擎已在生产进程实际加载。共享GPU时发现Ultralytics框去重时限告警，存在整批后续帧被静默清空的风险。已复用安装好的torchvision CUDA NMS，并增加按推理线程捕获超时、整批最多三次执行、仍超时则拒绝提交不完整帧的处理；不全局修改第三方库。两段共80真实帧在修复前有效输出和修复后逐字节一致；65项检测/本体检查及18项共享推理检查通过。双仓main及工作分支同为f84974f8838ba8f2ddbecb2522c21f5c3c8af167。修复正在服务重载，原模型和回滚保持；退出等待显式限制为180秒，未完成任务由既有持久检查点恢复。不能把带超时告警的早期运行当作完整可靠验收。
