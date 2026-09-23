@@ -44,6 +44,8 @@ def main():
         baseline = report['reports'][args.baseline_key]
         names = candidate['ontology']
         counts, classes, rows = Counter(), defaultdict(Counter), []
+        baseline_counts, baseline_classes = Counter(), defaultdict(Counter)
+        baseline_removed = 0
         for old, row in zip(baseline['rows'], candidate['rows'], strict=True):
             if old['image_id'] != row['image_id'] or old['truth'] != row['truth']:
                 raise ValueError('Model comparison uses different validation inputs or labels')
@@ -55,13 +57,21 @@ def main():
             boxes = [BoxEvidence(class_id=p['class_id'], class_name=names[str(p['class_id'])], confidence=p['confidence'], xyxy_norm=tuple(v / (width if i % 2 == 0 else height) for i, v in enumerate(p['xyxy_px']))) for p in predictions]
             _, audit = suppress_duplicate_boxes(boxes, threshold)
             retained = [predictions[i] for i in audit.retained_input_indices]
+            old_predictions = [p for p in old['predictions'] if p['confidence'] >= .25]
+            old_boxes = [BoxEvidence(class_id=p['class_id'], class_name=names[str(p['class_id'])], confidence=p['confidence'], xyxy_norm=tuple(v / (width if i % 2 == 0 else height) for i, v in enumerate(p['xyxy_px']))) for p in old_predictions]
+            _, old_audit = suppress_duplicate_boxes(old_boxes, threshold)
+            old_retained = [old_predictions[i] for i in old_audit.retained_input_indices]
+            baseline_removed += len(old_audit.removals)
+            for category, value in measure(old_retained, row['truth']).items():
+                baseline_counts.update(value)
+                baseline_classes[names[str(category)]].update(value)
             for category, value in measure(retained, row['truth']).items():
                 counts.update(value)
                 classes[names[str(category)]].update(value)
-            rows.append(dict(image_id=row['image_id'], image_path=str(path), image_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), predictions=retained, raw_count=len(predictions), removed=len(audit.removals), truth=row['truth']))
+            rows.append(dict(image_id=row['image_id'], image_path=str(path), image_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), predictions=retained, raw_count=len(predictions), removed=len(audit.removals), baseline_predictions=old_retained, baseline_raw_count=len(old_predictions), baseline_removed=len(old_audit.removals), truth=row['truth']))
             if role == 'first_person' and (row['image_id'] in {'F071', 'F123'} or any(p['class_id'] == 15 for p in row['truth'])):
                 comparison = Image.new('RGB', (1600, 640), '#122922')
-                for column, (title, values) in enumerate([(f"BASELINE {baseline['backend']}", [p for p in old['predictions'] if p['confidence'] >= .25]), (f"CANDIDATE {candidate['backend']} + EXISTING NMS", retained)]):
+                for column, (title, values) in enumerate([(f"BASELINE {baseline['backend']} + EXISTING NMS", old_retained), (f"CANDIDATE {candidate['backend']} + EXISTING NMS", retained)]):
                     panel = image.copy()
                     draw = ImageDraw.Draw(panel)
                     for prediction in values:
@@ -72,7 +82,7 @@ def main():
                     comparison.paste(panel, (column * 800, 30))
                     ImageDraw.Draw(comparison).text((column * 800 + 10, 8), title, fill='white')
                 comparison.save(output / (role + '-' + row['image_id'] + '.jpg'))
-        summaries[role] = dict(source_report=str(report_path), source_report_sha256=hashlib.sha256(report_path.read_bytes()).hexdigest(), confidence=.25, predict_iou=report['iou'], duplicate_suppression_iou=threshold, old_counts=baseline['thresholds']['0.25']['micro'], candidate_counts=dict(counts), candidate_classes={k: dict(v) for k, v in classes.items()}, rows=rows, baseline_backend=baseline['backend'], candidate_backend=candidate['backend'], independent_ground_truth=False)
+        summaries[role] = dict(source_report=str(report_path), source_report_sha256=hashlib.sha256(report_path.read_bytes()).hexdigest(), confidence=.25, predict_iou=report['iou'], duplicate_suppression_iou=threshold, both_models_postprocessed=True, baseline_raw_counts=baseline['thresholds']['0.25']['micro'], baseline_removed=baseline_removed, old_counts=dict(baseline_counts), baseline_classes={k: dict(v) for k, v in baseline_classes.items()}, candidate_counts=dict(counts), candidate_classes={k: dict(v) for k, v in classes.items()}, rows=rows, baseline_backend=baseline['backend'], candidate_backend=candidate['backend'], independent_ground_truth=False)
         print(role, summaries[role]['old_counts'], dict(counts))
     (output / args.summary_name).write_text(json.dumps(summaries, ensure_ascii=False, indent=2))
 
