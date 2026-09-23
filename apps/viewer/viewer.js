@@ -249,7 +249,7 @@ async function loadClip(item,start=0,object=null){
     if(data.ocr_integration)entries.push(["文字来源",`${data.ocr_integration.producer} · Paddle CPU · 精确原帧接收；手选诊断另列`],["文字模型",ResultPresentation.modelNames(data,['ocr','panel_detection'])],["OCR 模型哈希","识别器以模型文件清单哈希记录；面板检测以权重文件哈希记录。许可信息尚待补齐。"]);
     if(poseEvidence.parent)entries.push(["手姿父模型",`${poseEvidence.parent} · 保留为对照；当前骨架使用训练候选`]);
     if(Object.keys(data.environment?.actual_execution_providers||{}).length)entries.push(["实际执行",Object.entries(data.environment.actual_execution_providers).filter(([,value])=>value).map(([name,value])=>`${name}: ${value}`).join("；")]);
-    if(data.temporal_windows?.length)entries.push(["时序掩码",`${data.temporal_windows.length} 个窗口；窗口间身份重置，未测时序质量`]);
+    if(data.temporal_windows?.length)entries.push(["时序掩码",`${data.temporal_windows.length} 个窗口；窗口间身份重置，未测时序质量`],["时序模型",ResultPresentation.modelNames(data,["video_instance_segmentation","box_prompted_instance_segmentation"])]);
     if(data.source.complete_source_file)entries.push(["素材范围","完整提供文件；原件可能是既有实验剪辑，实验完整性未验收。"]);
     entries.push(...ResultPresentation.outputSummary(data));
     entries.forEach(([name,value])=>{const dt=document.createElement("dt"),dd=document.createElement("dd");dt.textContent=name;dd.textContent=value;$("evidence").append(dt,dd);});
