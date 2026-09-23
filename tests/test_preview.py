@@ -22,3 +22,23 @@ def test_video_seek_ranges(server,range_header,status,body):
 
 def test_no_directory_listing(server):
     c=http.client.HTTPConnection('127.0.0.1',server);c.request('GET','/');r=c.getresponse();assert r.status==403;c.close()
+
+
+@pytest.mark.parametrize('headers', [
+    {'Host': 'attacker.invalid', 'Origin': 'http://attacker.invalid'},
+    {'Origin': 'https://external.example'},
+    {},
+])
+def test_analysis_mutations_reject_cross_origin_and_missing_origin(server, headers):
+    c=http.client.HTTPConnection('127.0.0.1',server)
+    c.request('POST','/api/analysis','{}',headers=headers)
+    response=c.getresponse()
+    assert response.status==403
+    response.read();c.close()
+
+
+def test_reject_dns_rebinding_host_on_read(server):
+    c=http.client.HTTPConnection('127.0.0.1',server)
+    c.request('GET','/video.mp4',headers={'Host':'external.example'})
+    response=c.getresponse();assert response.status==403
+    response.read();c.close()
