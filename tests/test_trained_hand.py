@@ -11,6 +11,7 @@ from labprism.perception.trained_hand import (
     hand_observations,
     load_replay_model,
     verify_decoded_frame,
+    validate_pose_lineage,
 )
 
 
@@ -164,4 +165,51 @@ def test_cuda_replay_records_the_requested_backend_without_promoting_weights(tmp
     assert model["sha256"] == request["candidate"]["sha256"]
     request["runtime"]["device"] = "auto"
     with pytest.raises(ValueError):
+        load_replay_model(request, parent)
+
+
+@pytest.mark.parametrize("changed", [None, "source", "video", "rgb_sha256", "clip_pts", "samples"])
+def test_pose_lineage_allows_new_objects_but_rejects_changed_media(changed):
+    parent = {"source": {"camera_role": "first_person", "camera_id": "camera-A"},
+              "video": {"width": 100, "height": 80},
+              "frames": [{"frame_index": 0, "timestamp_ms": 0,
+                          "source_timestamp_ms": 1000, "clip_pts": 0,
+                          "time_base": "1/30", "rgb_sha256": "pixels",
+                          "objects": [{"id": "new-detector-object"}]}]}
+    lineage = copy.deepcopy(parent)
+    lineage["frames"][0]["objects"] = [{"id": "old-detector-object"}]
+    if changed in {"source", "video"}:
+        lineage[changed]["extra"] = "different"
+    elif changed in {"rgb_sha256", "clip_pts"}:
+        lineage["frames"][0][changed] = "different"
+    elif changed == "samples":
+        lineage["frames"] = []
+    if changed:
+        with pytest.raises(ValueError):
+            validate_pose_lineage(parent, lineage)
+    else:
+        validate_pose_lineage(parent, lineage)
+
+
+def test_separate_pose_lineage_is_pinned_and_does_not_borrow_old_outputs(tmp_path, monkeypatch):
+    request, parent = inputs(tmp_path)
+    lineage = copy.deepcopy(parent)
+    lineage.update(video={"width": 10}, frames=[])
+    parent.update(video={"width": 10}, frames=[], models=[])
+    root = tmp_path / "lineage"
+    root.mkdir()
+    for name in ("result", "receipt"):
+        (root / (name + ".json")).write_text("{}")
+    request.update(schema_version="labprism-trained-hand-replay/2", pose_lineage={
+        "path": str(root), **{name + "_sha256": sha256(root / (name + ".json"))
+                             for name in ("result", "receipt")}})
+    monkeypatch.setattr("labprism.perception.trained_hand.verify_run", lambda path: lineage)
+    model = load_replay_model(request, parent)
+    assert model["pose_lineage"] == request["pose_lineage"]
+    assert parent["models"] == []
+    (root / "result.json").write_text('{"changed":true}')
+    with pytest.raises(ValueError, match="Frozen pose lineage"):
+        load_replay_model(request, parent)
+    request["schema_version"] = "labprism-trained-hand-replay/1"
+    with pytest.raises(ValueError, match="version 2"):
         load_replay_model(request, parent)

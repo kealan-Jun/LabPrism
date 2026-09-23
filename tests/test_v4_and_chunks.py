@@ -75,11 +75,14 @@ def test_chunk_limits_and_private_metadata_not_in_browser(tmp_path):
 def test_current_pose_identity_survives_projection_without_training_paths():
     r=v3_result()
     r['models']=[{'id':'trained','task':'hand_landmarks_candidate','parent_sha256':'a'*64,
-                  'producer_receipt':'/private/receipt.json','path':'/private/model.onnx'}]
+                  'producer_receipt':'/private/receipt.json','path':'/private/model.onnx',
+                  'pose_lineage':{'path':'/private/old-run','result_sha256':'b'*64,
+                                  'receipt_sha256':'c'*64,'command':'/private/command'}}]
     r['configuration']={'trained_hand_replay':{'model_id':'trained','private_path':'/private/run'},'source':'/private/source'}
     projected=browser_projection(r)
     assert projected['model_usage']=={'hand_pose':'trained'}
     assert projected['models'][0]['parent_sha256']=='a'*64
+    assert projected['models'][0]['pose_lineage']=={'result_sha256':'b'*64,'receipt_sha256':'c'*64}
     assert '/private' not in json.dumps(projected)
     assert 'configuration' not in projected
 

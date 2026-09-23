@@ -17,6 +17,10 @@ def browser_projection(result):
     out['source']['experiment']={k:v for k,v in result['source'].get('experiment',{}).items()
         if k in {'experiment_id','experiment_title','recording_date'}}
     out['models']=[{k:v for k,v in model.items() if k in {'id','task','sha256','parent_sha256','role','license','backend','hash_basis'}} for model in result['models']]
+    for model, public in zip(result['models'], out['models'], strict=True):
+        if model.get('pose_lineage'):
+            public['pose_lineage']={k:v for k,v in model['pose_lineage'].items()
+                                   if k in {'result_sha256','receipt_sha256'}}
     # Historical v3 stage receipts often express availability only per frame.
     # Preserve explicit non-execution instead of presenting it as zero detections.
     empty={'keypoints':all(not f['hands'] for f in result['frames']),

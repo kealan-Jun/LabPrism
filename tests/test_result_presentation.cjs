@@ -44,6 +44,14 @@ test('trained pose uses the current model and hash-bound parent without assuming
   delete result.configuration.trained_hand_replay;
   assert.equal(poseEvidence(result,true).active,'base / unrelated / trained');
 });
+test('current detector can use separately pinned pose lineage without inventing a missing registry model',()=>{
+  const model={id:'trained',task:'hand_landmarks_candidate',parent_sha256:'1234567890abcdef',
+    pose_lineage:{result_sha256:'result',receipt_sha256:'receipt'}};
+  const result={configuration:{trained_hand_replay:{model_id:'trained'}},models:[model]};
+  assert.deepEqual(poseEvidence(result,true),{active:'trained',parent:'1234567890ab · 来源回执已校验'});
+  delete model.pose_lineage.receipt_sha256;
+  assert.equal(poseEvidence(result,true).parent,'父模型记录缺失');
+});
 test('production purpose and failed outputs keep their meaning',()=>{
   const result={data_use:{purpose:'production_observation'},source:{split:null},output_statuses:{keypoints:{state:'failed',reason:'模型调用失败'},readouts:{state:'not_connected',reason:'尚无绑定'}}};
   assert.equal(sourceUse(result),'生产观察 · 未划入训练或验证分区');

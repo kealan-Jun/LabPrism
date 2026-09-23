@@ -42,6 +42,10 @@ def run(request_path, output):
             raise ValueError("Frozen parent run changed")
     parent = verify_run(parent_path)
     model = load_replay_model(request, parent)
+    tracking_ran = any(
+        frame.get("availability", {}).get("tracking") != "not_run"
+        for frame in parent["frames"]
+    )
     cv2.setNumThreads(2)
     pose, color = load_color_aligned_pose(
         model, request["pipeline"]["path"], request["pipeline"]["sha256"],
@@ -78,7 +82,7 @@ def run(request_path, output):
             "local_source_archive_sha256": sha256(source_archive),
             "color": color,
             "selection": "Four orientations, median score; unchanged .3 score gate",
-            "timing_scope": "decode + hand pose + dependent 2D proximity/events; excludes reused detector, masks and object tracking",
+            "timing_scope": "decode + hand pose + eligible dependent 2D geometry; excludes detector and other prior stages",
             "promotion": "none",
             "independent_quality": None,
         },
@@ -118,7 +122,7 @@ def run(request_path, output):
     result["derived_from"] = {
         "result_sha256": request["parent"]["result_sha256"],
         "receipt_sha256": request["parent"]["receipt_sha256"],
-        "mode": "same_pixels_objects_masks_tracks_reused_trained_hand_inference",
+        "mode": "same_pixels_current_parent_objects_trained_hand_inference",
     }
     result["models"].append(model)
     result["configuration"]["trained_hand_replay"] = {
@@ -129,7 +133,7 @@ def run(request_path, output):
         "pose_selection": "score",
         "pose_threshold": 0.3,
         "producer_receipt_sha256": request["producer_receipt"]["sha256"],
-        "object_tracking": "reused_from_verified_parent",
+        "object_tracking": "reused_from_verified_parent" if tracking_ran else "not_run_in_parent",
         "promotion": "none",
     }
     result["parent_environment"] = result["environment"]
@@ -149,7 +153,8 @@ def run(request_path, output):
             k: importlib.metadata.version(k)
             for k in ("av", "rtmlib", "numpy")
         },
-        "reused_modules": ["detection", "segmentation_if_present", "object_tracking"],
+        "reused_modules": ["detection", "segmentation_if_present"] + (
+            ["object_tracking"] if tracking_ran else []),
     }
     result["environment"]["packages"]["onnxruntime"] = ort.__version__
     result["parent_metrics"] = result["metrics"]
@@ -188,7 +193,7 @@ def run(request_path, output):
             relation_start = time.perf_counter()
             frame["relations"] = relations_for_frame(
                 frame, result["configuration"].get("proximity_threshold_px", 15)
-            )
+            ) if tracking_ran else []
             relation_ms = (time.perf_counter() - relation_start) * 1000
             frame["parent_latency_ms"] = frame.get("latency_ms", {})
             frame["latency_ms"] = {"hands": milliseconds, "relations": relation_ms}
@@ -212,8 +217,11 @@ def run(request_path, output):
         ("events", bool(result["events"])),
     ):
         result.setdefault("output_statuses", {})[key] = {
-            "state": "predicted" if present else "no_detection",
-            "reason": "Actual receipted hand inference and dependent 2D geometry; quality unapproved",
+            "state": ("not_run" if key != "keypoints" and not tracking_ran
+                      else "predicted" if present else "no_detection"),
+            "reason": ("Object tracking unavailable; dependent temporal geometry not run"
+                       if key != "keypoints" and not tracking_ran else
+                       "Actual receipted hand inference and dependent 2D geometry; quality unapproved"),
         }
     result["metrics"] = {
         "processed_frames": len(targets),
@@ -222,7 +230,7 @@ def run(request_path, output):
         "proximity_events": len(result["events"]),
         "candidate_processing_seconds": elapsed,
         "candidate_processing_fps": len(targets) / elapsed,
-        "timing_scope": "decode + pose + dependent 2D geometry only; parent detection/masks/tracking reused",
+        "timing_scope": "decode + pose + eligible dependent 2D geometry; excludes detector and other prior stages",
         "pose_p50_ms": float(np.median(pose_times)),
         "pose_p95_ms": float(np.percentile(pose_times, 95)),
         "frames_with_pose_rois": len(active_times),
@@ -243,7 +251,7 @@ def run(request_path, output):
         },
     }
     result["limitations"].append(
-        "Role-specific producer training; development-only candidate. All pose-dependent 2D events recomputed; contact, action and independent joint accuracy remain unverified."
+        "Role-specific producer training; development-only candidate. Pose recomputed on current boxes; dependent 2D events require available tracks. Contact, action and independent joint accuracy remain unverified."
     )
     validate_result(result)
     write("result.json", result)

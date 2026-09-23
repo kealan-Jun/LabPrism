@@ -5,14 +5,27 @@ import hashlib
 import json
 from pathlib import Path
 
-from labprism.artifacts import sha256
+from labprism.artifacts import sha256, verify_run
 from labprism.perception.hand_head import validate_training_receipt
 from labprism.perception.hand_rotation import accepted
 from labprism.perception.hand_color import pose_runtime_options
 
 
+def validate_pose_lineage(parent, lineage):
+    """Allow new detection boxes, never unrelated footage or borrowed old poses."""
+    if parent["source"] != lineage["source"] or parent["video"] != lineage["video"]:
+        raise ValueError("Pose lineage belongs to another source or video")
+    keys = ("frame_index", "timestamp_ms", "source_timestamp_ms", "clip_pts",
+            "time_base", "rgb_sha256")
+    def identities(run):
+        return [tuple(frame[key] for key in keys) for frame in run["frames"]]
+    if identities(parent) != identities(lineage):
+        raise ValueError("Pose lineage does not cover the exact current samples")
+
+
 def load_replay_model(request, parent):
-    if request.get("schema_version") != "labprism-trained-hand-replay/1":
+    version = request.get("schema_version")
+    if version not in {"labprism-trained-hand-replay/1", "labprism-trained-hand-replay/2"}:
         raise ValueError("Explicit trained-hand replay request required")
     role = parent["source"]["camera_role"]
     if (
@@ -33,10 +46,21 @@ def load_replay_model(request, parent):
         parent_sha256=request["parent_model_sha256"],
         labels_sha256=request["labels_sha256"],
     )
+    lineage = parent
+    if version == "labprism-trained-hand-replay/2":
+        pin = request["pose_lineage"]
+        path = Path(pin["path"])
+        for name in ("result", "receipt"):
+            if sha256(path / (name + ".json")) != pin[name + "_sha256"]:
+                raise ValueError("Frozen pose lineage changed")
+        lineage = verify_run(path)
+        validate_pose_lineage(parent, lineage)
+    elif "pose_lineage" in request:
+        raise ValueError("Separate pose lineage requires replay version 2")
     if not any(
         m["sha256"] == producer["parent_onnx_sha256"]
         and m["task"] == "hand_landmarks_candidate"
-        for m in parent["models"]
+        for m in lineage["models"]
     ):
         raise ValueError("Replay is not derived from this pose model")
     model = copy.deepcopy(request["candidate"])
@@ -63,6 +87,8 @@ def load_replay_model(request, parent):
         code_license="Apache-2.0 MMPose/rtmlib",
         weights_license="Project diagnostic derivative; upstream/data licenses retained; no public release approval",
     )
+    if version == "labprism-trained-hand-replay/2":
+        model["pose_lineage"] = copy.deepcopy(request["pose_lineage"])
     return model
 
 

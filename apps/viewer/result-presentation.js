@@ -19,7 +19,10 @@
     const model=(result.models||[]).find(m=>m.id===id&&m.task==='hand_landmarks_candidate');
     if(!model)return {active:'当前手姿模型记录缺失',parent:null};
     const parent=(result.models||[]).find(m=>m.sha256===model.parent_sha256&&m.task==='hand_landmarks_candidate');
-    return {active:model.id,parent:parent?.id||'父模型记录缺失'};
+    const lineage=model.pose_lineage;
+    const pinnedParent=lineage?.result_sha256&&lineage?.receipt_sha256&&model.parent_sha256
+      ? `${model.parent_sha256.slice(0,12)} · 来源回执已校验` : null;
+    return {active:model.id,parent:parent?.id||pinnedParent||'父模型记录缺失'};
   }
   function sourceUse(result){
     const purpose=result.data_use?.purpose;

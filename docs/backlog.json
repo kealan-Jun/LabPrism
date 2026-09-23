@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 65,
+  "version": 66,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -339,8 +339,8 @@
       "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。"
     }
   ],
-  "updated_at": "2026-09-23T22:10:12.535310+00:00",
-  "priority_note": "持续交付完整产品与模型；已上线合格检测保持，分割v6已完成全覆盖训练但未达到SAM质量，拒绝替换。继续将当前检测与手姿/时序掩膜接通，按真实错误补充场景和监督。",
+  "updated_at": "2026-09-23T22:28:58.139584+00:00",
+  "priority_note": "完整产品目标继续：当前v8检测已接CUDA手姿，v5m已接官方SAM2时序结果。继续针对握拳/遮挡、密集器材与分割错误补监督并训练；不以覆盖量冒充精度。v6分割未超过现用基线，保留最佳已验证服务模型。",
   "latest_scan_runtime_iteration": {
     "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
     "source_commit": "49977f8ffbdf313eb6389ed35d212a4788b6d1b6",
@@ -385,5 +385,22 @@
     "service_changed": false,
     "report": "docs/SEGMENTATION-COVERAGE-20260924.zh-CN.md",
     "decision": "/mnt/realityloop-nas/LabPrism/evaluations/segmentation-coverage-20260924-v6-retry2/decision.json"
+  },
+  "latest_current_pipeline_iteration": {
+    "date": "2026-09-24",
+    "first_detector": "deployed v8",
+    "first_frames": 761,
+    "hand_model_unchanged": true,
+    "accepted_pose_observations": 1063,
+    "old_accepted_pose_observations": 311,
+    "pose_quality_improvement": "unproven; joint misalignment remains",
+    "third_detector": "deployed v5m",
+    "third_frames": 667,
+    "temporal_masks": 5336,
+    "temporal_stage_seconds": 250.22682396799792,
+    "production_service_changed": false,
+    "pose_promotion": false,
+    "browser": "passed: current model identity, original/layers, same-time comparison, playback/step/seek,390px",
+    "report": "docs/CURRENT-PIPELINE-20260924.zh-CN.md"
   }
 }
