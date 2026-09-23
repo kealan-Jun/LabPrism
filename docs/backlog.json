@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 4,
+  "version": 64,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -339,6 +339,31 @@
       "note": "真实候选和固定内部回归已跑。手套有输出帧增加但PCK未知；语义失败；过滤和1280配置退化已拒绝。正式质量改进未验收。"
     }
   ],
-  "updated_at": "2026-09-18T03:15:29.815449+00:00",
-  "priority_note": "用户要求当前专注模型能力；NPU 转换、量化和实板部署最后推进。"
+  "updated_at": "2026-09-23T21:37:07.885429+00:00",
+  "priority_note": "交付完整产品和模型；持续有效补样、分任务标注、GPU训练、短周期真实对照，及时部署更好且关键能力无明显退化的模型并核验实际加载、保留回滚。初标、复核、导出及独立效果分别记录。数据/标签/报告在NAS，代码和模型本地；本对话执行，不新建任务或代理。",
+  "latest_scan_runtime_iteration": {
+    "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
+    "source_commit": "49977f8ffbdf313eb6389ed35d212a4788b6d1b6",
+    "deployment_status": "deployed_actual_coarse_and_fine_progress_verified",
+    "worker_pid": 1223974,
+    "tests_passed": 181,
+    "same_real_frames": 320,
+    "prediction_ledgers_byte_identical": true,
+    "observed_queue_peak_old": 19,
+    "observed_queue_peak_new": 5,
+    "long_running_oom_resolution": null,
+    "models_changed": false,
+    "capture_web_unchanged": true,
+    "evidence_root": "/mnt/realityloop-nas/LabPrism/evaluations/scan-memory-20260924",
+    "production_coarse_samples_per_role": 191,
+    "production_queue_caps": {
+      "third_person_observed_source": 6,
+      "first_person_observed_source": 13
+    },
+    "production_fine_observed": {
+      "first_person": 569,
+      "third_person": 34
+    },
+    "nms_timeout_warnings_observed": 19
+  }
 }
