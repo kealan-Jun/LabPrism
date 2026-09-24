@@ -62,6 +62,38 @@ def inputs(tmp_path):
     return request, parent
 
 
+@pytest.mark.parametrize('bad', [None, 'legacy', 'sealed', 'training', 'role', 'weights'])
+def test_fresh_pose_uses_receipted_model_without_requiring_old_pose_output(tmp_path, bad):
+    request, parent = inputs(tmp_path)
+    request['schema_version'] = 'labprism-trained-hand-inference/1'
+    parent['models'] = []
+    parent['source'].update(schema_version='labprism-local-observation/1', split=None,
+                            training_use_authorized=False, independent_ground_truth=False)
+    parent.update(data_use={'purpose': 'production_observation'},
+                  semantic_taxonomy={'id': 'not_run', 'version': '1', 'classes': []},
+                  time_mapping={'clip_origin_ms': 0, 'capture_origin_ms': None, 'global_origin_ms': None},
+                  coordinates={'clip_to_source': [[1, 0, 0], [0, 1, 0], [0, 0, 1]], 'operations': []},
+                  output_statuses={k: {'state': 'not_run', 'reason': 'fixture'} for k in
+                                   ('boxes', 'instance_masks', 'semantic_map', 'keypoints', 'tracks', 'relations', 'events', 'readouts')})
+    if bad == 'legacy':
+        request['schema_version'] = 'labprism-trained-hand-replay/1'
+    elif bad == 'sealed':
+        parent['source']['split'] = 'test'
+    elif bad == 'training':
+        parent['source']['training_use_authorized'] = True
+    elif bad == 'role':
+        request['role'] = 'third_person'
+    elif bad == 'weights':
+        (tmp_path / 'model').write_text('corrupt')
+    if bad:
+        with pytest.raises(ValueError):
+            load_replay_model(request, parent)
+    else:
+        model = load_replay_model(request, parent)
+        assert model['status'] == 'research_candidate_only'
+        assert model['parent_sha256'] == 'parent'
+
+
 @pytest.mark.parametrize(
     "bad",
     [

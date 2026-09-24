@@ -21,6 +21,10 @@ def validate_handoff(directory, request_path, parent):
         if Path(name).name != name or path.is_symlink() or sha256(path) != digest:
             raise ValueError('Temporal producer file changed')
     result = json.loads((directory / 'result.json').read_text())
+    if request.get('schema_version') == 'visioncortex-temporal-mask-request/2':
+        if (request.get('data_use') != parent.get('data_use')
+                or result.get('data_use') != request.get('data_use')):
+            raise ValueError('Temporal data purpose changed')
     if (result.get('schema_version') != 'visioncortex-temporal-mask-result/1'
             or result.get('source') != parent['source']
             or result.get('parent_result_sha256') != request['parent_result_sha256']

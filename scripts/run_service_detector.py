@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Replay the configured VisionCortex detector on every pinned parent sample."""
+"""Run the configured VisionCortex detector on receipted video or pinned samples."""
 import argparse
+from contextlib import ExitStack
 from datetime import datetime, timezone
 import fcntl
-from fractions import Fraction
-import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -15,19 +14,22 @@ import time
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from labprism.artifacts import freeze_sources, sha256, verify_run
 from labprism.contracts import validate_result
+from labprism.runtime.detector_input import detector_input
 from run_upstream_video_masks import validate_destination
 
 
-def check_decoded_sample(frame, rgb, decoder_ms, dimensions):
-    if (list(rgb.shape[:2][::-1]) != dimensions
-            or hashlib.sha256(rgb.tobytes()).hexdigest() != frame['rgb_sha256']
-            or abs(decoder_ms - float(Fraction(frame['time_base']) * frame['clip_pts']) * 1000) > .1):
-        raise ValueError('Decoder pixels, dimensions or position differ from pinned sample')
-
-
 def run(args):
+    validate_destination(args.output)
+    with ExitStack() as resources:
+        parent, samples = resources.enter_context(detector_input(
+            parent=args.parent, media=args.media, sample_hz=args.sample_hz))
+        lock = resources.enter_context(args.gpu_lock.open('a'))
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return infer(args, parent, samples, resources)
+
+
+def infer(args, parent, samples, resources):
     import cv2
-    import numpy as np
     import torch
 
     sys.path.insert(0, str(args.producer_repo / 'src'))
@@ -36,17 +38,12 @@ def run(args):
     from visioncortex.detection_duplicates import duplicate_suppression_policies, suppress_duplicate_boxes
     from visioncortex.schemas import ViewInput, ViewRole
 
-    validate_destination(args.output)
-    parent = verify_run(args.parent)
-    if parent['source']['split'] not in {'train', 'val'}:
-        raise ValueError('Development source required')
+    input_dir = args.parent if args.parent is not None else args.media
     config = load_config(args.config)
     role = ViewRole(parent['source']['camera_role'])
     engine = detection._select_model_path(role, config)
     if engine.suffix != '.engine' or sha256(engine) != args.engine_sha256:
         raise ValueError('Configured engine differs from pinned deployment')
-    lock = args.gpu_lock.open('a')
-    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     if not torch.cuda.is_available() or torch.cuda.mem_get_info()[0] < 4 * 1024**3:
         raise RuntimeError('Insufficient shared CUDA memory')
     torch.set_num_threads(4)
@@ -54,7 +51,8 @@ def run(args):
     args.output.mkdir(parents=True, exist_ok=False)
     repo = Path(__file__).resolve().parents[1]
     snapshot = Path(json.loads((repo / 'configs/project.json').read_text())['data_root_default']) / 'source-snapshots'
-    pin = sha256(args.parent / 'result.json')[:16] + '-' + args.engine_sha256[:12]
+    snapshot.mkdir(parents=True, exist_ok=True)
+    pin = sha256(input_dir / 'receipt.json')[:16] + '-' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     implementation = {
         'consumer': freeze_sources(repo, [Path(__file__), repo / 'scripts/run_upstream_video_masks.py',
             *sorted((repo / 'src/labprism').rglob('*.py'))], snapshot / ('detector-consumer-' + pin + '.zip')),
@@ -68,18 +66,26 @@ def run(args):
         'status': 'candidate_model_replay' if args.candidate else 'current_service_model_replay',
         'code_revision': subprocess.check_output(
             ['git', 'rev-parse', 'HEAD'], cwd=args.producer_repo, text=True).strip()}
-    result = {'schema_version': 'labprism-video-result/3', 'created_at': datetime.now(timezone.utc).isoformat(),
+    result = {'schema_version': parent.get('schema_version', 'labprism-video-result/3'), 'created_at': datetime.now(timezone.utc).isoformat(),
         'source': parent['source'], 'video': parent['video'], 'models': [model], 'frames': [], 'events': [],
         'ontology': {'schema_version': 'labprism-ontology/1', 'display_names': display, 'display_language': 'zh-CN'},
         'mode': 'offline_sampled_inference', 'prediction_status': 'unreviewed_model_proposals',
-        'configuration': {}, 'derived_from': {'result_sha256': sha256(args.parent / 'result.json'),
-        'receipt_sha256': sha256(args.parent / 'receipt.json')},
-        'limitations': ['Configured detector on existing exposed development video; not independent accuracy',
+        'configuration': {},
+        'limitations': ['Configured detector inference; no independent accuracy measurement or implicit training authorization',
             'Only detections recomputed here; old masks, hand pose, tracks, relations and actions are not relabelled as new',
-            'Parent PTS/timebase retained after exact clip, ordinal, RGB and decoder-time verification']}
-    targets = {f['frame_index']: f for f in parent['frames']}
-    view = ViewInput(view_id=parent['source']['camera_id'], role=role, video=args.parent / 'clip.mp4')
+            'Native PTS/timebase and pixel hashes retained; sparse samples do not imply predictions on intervening frames']}
+    if args.parent is not None:
+        result['derived_from'] = {'result_sha256': sha256(args.parent / 'result.json'),
+                                  'receipt_sha256': sha256(args.parent / 'receipt.json')}
+    if result['schema_version'] == 'labprism-video-result/4':
+        for key in ('data_use', 'semantic_taxonomy', 'time_mapping', 'coordinates'):
+            result[key] = parent[key]
+        result['output_statuses'] = {key: {'state': 'not_run', 'reason': 'Only detector inference requested'}
+            for key in ('boxes', 'instance_masks', 'semantic_map', 'keypoints', 'tracks', 'relations', 'events', 'readouts')}
+        result['semantic_taxonomy'] = {'id': 'not_run', 'version': '1', 'classes': [], 'unknown_id': None, 'ignore_id': None}
+    view = ViewInput(view_id=parent['source']['camera_id'], role=role, video=input_dir / 'clip.mp4')
     scanner = detection.RoleScanner(role, config, appearance_enabled=False)
+    resources.callback(scanner.close)
     policy = duplicate_suppression_policies(config).get(role)
     started = time.perf_counter()
     pending = []
@@ -110,57 +116,50 @@ def run(args):
                 'model_id': model['id'], 'mask_contours': []} for i, b in enumerate(boxes)]
             row = {k: frame[k] for k in ['frame_index', 'timestamp_ms', 'presentation_seconds', 'clip_pts',
                 'time_base', 'source_timestamp_ms', 'rgb_sha256']}
-            row.update(objects=objects, hands=[], availability={'detection': 'predicted',
-                **{k: 'not_run' for k in ['instance_segmentation', 'hands', 'tracking', 'ocr', 'events']}},
+            row.update(objects=objects, hands=[], availability={'detection': 'predicted' if objects else 'no_detection',
+                **{k: 'not_run' for k in ['instance_segmentation', 'semantic_segmentation', 'hands', 'tracking', 'ocr', 'events']}},
                 detection_duplicate_audit=audit.model_dump(mode='json') if audit else None)
             result['frames'].append(row)
         pending.clear()
         original.clear()
 
-    capture = cv2.VideoCapture(str(args.parent / 'clip.mp4'))
-    try:
-        index = 0
-        while capture.grab():
-            if index in targets:
-                ok, bgr = capture.retrieve()
-                if not ok:
-                    raise RuntimeError('Source decode failed')
-                frame = targets[index]
-                rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
-                check_decoded_sample(frame, rgb, capture.get(cv2.CAP_PROP_POS_MSEC), [width, height])
-                pending.append(detection.FramePacket(view, index, frame['timestamp_ms'], bgr,
-                    cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY), None, 0.0))
-                original.append(frame)
-                if len(pending) == scanner.batch_size:
-                    flush()
-            index += 1
-        flush()
-        if {f['frame_index'] for f in result['frames']} != targets.keys():
-            raise ValueError('Incomplete sampled video')
-        backend = scanner.model.predictor.model
-        if backend.format != 'engine' or backend.device.type != 'cuda':
-            raise RuntimeError('Actual backend was not TensorRT CUDA')
-        result['configuration'] = {'imgsz': scanner.image_size, 'confidence': config['models']['confidence'],
-            'iou': config['models']['iou'], 'max_detections': config['models']['max_detections'],
-            'final_duplicate_policy': policy, 'actual_engine_batches': sorted(set(inference_batches)),
-            'end2end': bool(backend.end2end), 'exact_batch_padding_frames': scanner.exact_batch_padding_frames}
-        result['environment'] = {'gpu': torch.cuda.get_device_name(0), 'torch': torch.__version__,
-            'actual_execution_providers': {'detector': 'TensorRT CUDA FP16'}}
-        result['metrics'] = {'processed_frames': len(result['frames']),
-            'observations': sum(len(f['objects']) for f in result['frames']), 'stage_seconds': time.perf_counter() - started,
-            'inference_batch_seconds': sum(batch_times), 'inference_batches': len(batch_times),
-            'suppressed_duplicates': removed, 'nms_timeout_retries': scanner.nms_timeout_retries,
-            'scope': 'decode + model load/inference + proposal mapping; excludes other modules and artifact publication',
-            'accuracy': None, 'generalization': None, 'temporal_quality': None, 'full_pipeline_fps': None, 'npu_fps': None}
-    finally:
-        capture.release()
-        scanner.close()
-        fcntl.flock(lock, fcntl.LOCK_UN)
+    for frame, bgr in samples:
+        pending.append(detection.FramePacket(view, frame['frame_index'], frame['timestamp_ms'], bgr,
+            cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY), None, 0.0))
+        original.append(frame)
+        if len(pending) == scanner.batch_size:
+            flush()
+            if len(result['frames']) % 100 == 0:
+                print(json.dumps({'processed_frames': len(result['frames']), 'timestamp_ms': frame['timestamp_ms']}), flush=True)
+    flush()
+    backend = scanner.model.predictor.model
+    if backend.format != 'engine' or backend.device.type != 'cuda':
+        raise RuntimeError('Actual backend was not TensorRT CUDA')
+    result['configuration'] = {'imgsz': scanner.image_size, 'confidence': config['models']['confidence'],
+        'iou': config['models']['iou'], 'max_detections': config['models']['max_detections'],
+        'final_duplicate_policy': policy, 'actual_engine_batches': sorted(set(inference_batches)),
+        'end2end': bool(backend.end2end), 'exact_batch_padding_frames': scanner.exact_batch_padding_frames}
+    result['environment'] = {'gpu': torch.cuda.get_device_name(0), 'torch': torch.__version__,
+        'actual_execution_providers': {'detector': 'TensorRT CUDA FP16'}}
+    result['metrics'] = {'processed_frames': len(result['frames']),
+        'observations': sum(len(f['objects']) for f in result['frames']), 'stage_seconds': time.perf_counter() - started,
+        'inference_batch_seconds': sum(batch_times), 'inference_batches': len(batch_times),
+        'suppressed_duplicates': removed, 'nms_timeout_retries': scanner.nms_timeout_retries,
+        'scope': 'decode + model load/inference + proposal mapping; excludes other modules and artifact publication',
+        'accuracy': None, 'generalization': None, 'temporal_quality': None, 'full_pipeline_fps': None, 'npu_fps': None}
+    if result['schema_version'] == 'labprism-video-result/4':
+        result['output_statuses']['boxes'] = {'state': 'predicted' if any(f['objects'] for f in result['frames']) else 'no_detection',
+            'reason': 'Actual configured TensorRT detector and shared duplicate suppression'}
     validate_result(result)
-    for source, name in [(args.parent / 'clip.mp4', 'clip.mp4'),
+    if args.parent is not None:
+        members = [(args.parent / 'clip.mp4', 'clip.mp4'),
                          (args.parent / 'producer-receipt.json', 'producer-receipt.json'),
                          (args.parent / 'result.json', 'baseline-result.json'),
-                         (args.parent / 'receipt.json', 'baseline-receipt.json')]:
+                         (args.parent / 'receipt.json', 'baseline-receipt.json')]
+    else:
+        members = [(args.media / name, name) for name in parent['source']['files']]
+        members.append((args.media / 'receipt.json', 'producer-receipt.json'))
+    for source, name in members:
         shutil.copyfile(source, args.output / name)
     (args.output / 'model-receipt.json').write_text(json.dumps({'schema_version': 'labprism-model-receipt/1', 'models': [model]}))
     (args.output / 'result.json').write_text(json.dumps(result, ensure_ascii=False, separators=(',', ':')))
@@ -176,7 +175,11 @@ def run(args):
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__doc__)
-    for name in ['parent', 'output', 'producer-repo', 'config', 'gpu-lock']:
+    inputs = p.add_mutually_exclusive_group(required=True)
+    inputs.add_argument('--parent', type=Path, help='Replay exact samples from a receipted inference run')
+    inputs.add_argument('--media', type=Path, help='Analyze a fresh receipted video without prior model output')
+    p.add_argument('--sample-hz', type=float, default=5, help='Fresh-video sampling, 1–10 Hz; replay retains its original samples')
+    for name in ['output', 'producer-repo', 'config', 'gpu-lock']:
         p.add_argument('--' + name, type=Path, required=True)
     p.add_argument('--engine-sha256', required=True)
     p.add_argument('--candidate', action='store_true', help='Record a candidate replay; does not claim a production deployment')

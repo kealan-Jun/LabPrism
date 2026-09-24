@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 69,
+  "version": 70,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -167,7 +167,8 @@
       "status": "in_progress",
       "evidence": [
         "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
-        "docs/RECEIPT-STREAMING-20260924.zh-CN.md"
+        "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
+        "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md"
       ],
       "latest_scan_cancellation": {
         "date": "2026-09-24",
@@ -208,6 +209,22 @@
         "report": "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
         "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/receipt-streaming-20260924-v1",
         "model_loads_observed": 7
+      },
+      "latest_fresh_video_pipeline": {
+        "date": "2026-09-24",
+        "report": "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/fresh-video-20260924-v1",
+        "producer_commit": "8f905da00e78adcab81690fcd22c55df4d24fd71",
+        "actual_sampled_frames": 582,
+        "detector_observations": 10559,
+        "hand_observations": 667,
+        "temporal_mask_observations": 4106,
+        "consumer_tests": 117,
+        "producer_tests": 23,
+        "new_training_runs": 0,
+        "production_model_replaced": false,
+        "queue_integration": "not_complete",
+        "independent_accuracy": null
       }
     },
     {
@@ -222,9 +239,26 @@
       "evidence": [
         "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json",
         "/home/x1/.local/share/labprism/runs/continuous-candidate-20260918-v1/weighing-first/receipt.json",
-        "/home/x1/.local/share/labprism/runs/temporal-candidate-20260918-v2/weighing-first/receipt.json"
+        "/home/x1/.local/share/labprism/runs/temporal-candidate-20260918-v2/weighing-first/receipt.json",
+        "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md"
       ],
-      "note": "连续候选已在2575帧运行相机补偿/外观关联，SAM2视频记忆已在646帧、13个窗口运行；窗口间身份重置。无身份真值、无时序质量验收，候选不晋级。"
+      "note": "连续候选已在2575帧运行相机补偿/外观关联，SAM2视频记忆已在646帧、13个窗口运行；窗口间身份重置。无身份真值、无时序质量验收，候选不晋级。",
+      "latest_fresh_video_pipeline": {
+        "date": "2026-09-24",
+        "report": "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/fresh-video-20260924-v1",
+        "producer_commit": "8f905da00e78adcab81690fcd22c55df4d24fd71",
+        "actual_sampled_frames": 582,
+        "detector_observations": 10559,
+        "hand_observations": 667,
+        "temporal_mask_observations": 4106,
+        "consumer_tests": 117,
+        "producer_tests": 23,
+        "new_training_runs": 0,
+        "production_model_replaced": false,
+        "queue_integration": "not_complete",
+        "independent_accuracy": null
+      }
     },
     {
       "id": "WEB-03",
@@ -413,7 +447,7 @@
       }
     }
   ],
-  "updated_at": "2026-09-24T00:13:04.975530+00:00",
+  "updated_at": "2026-09-24T00:44:59.096550+00:00",
   "priority_note": "完整产品目标继续：当前v8检测已接CUDA手姿，v5m已接官方SAM2时序结果。继续针对握拳/遮挡、密集器材与分割错误补监督并训练；不以覆盖量冒充精度。v6分割未超过现用基线，保留最佳已验证服务模型。",
   "latest_scan_runtime_iteration": {
     "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
@@ -516,5 +550,21 @@
     "report": "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
     "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/receipt-streaming-20260924-v1",
     "model_loads_observed": 7
+  },
+  "latest_fresh_video_pipeline": {
+    "date": "2026-09-24",
+    "report": "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md",
+    "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/fresh-video-20260924-v1",
+    "producer_commit": "8f905da00e78adcab81690fcd22c55df4d24fd71",
+    "actual_sampled_frames": 582,
+    "detector_observations": 10559,
+    "hand_observations": 667,
+    "temporal_mask_observations": 4106,
+    "consumer_tests": 117,
+    "producer_tests": 23,
+    "new_training_runs": 0,
+    "production_model_replaced": false,
+    "queue_integration": "not_complete",
+    "independent_accuracy": null
   }
 }

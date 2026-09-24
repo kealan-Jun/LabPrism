@@ -1,5 +1,14 @@
 # Trained hand replay / 1
 
+`labprism-trained-hand-inference/1` also accepts a fresh detector result without an
+earlier pose result. It validates the same AW training receipt, checkpoint parent,
+candidate hash, label identity, normalization and role. It permits development
+sources or explicit video-result/4 production observations with null split and no
+training/ground-truth authorization; sealed tests remain excluded. It rejects
+`pose_lineage`, since model provenance comes from the training receipt rather than
+unrelated footage. Predictions remain unapproved candidates. Replay versions 1/2
+retain their original stricter historical-parent checks.
+
 `labprism-trained-hand-replay/1` consumes an AnnotationWorkbench diagnostic inference artifact. LabPrism does not train or own the dataset. A frozen request pins the parent run's result and receipt hashes, producer training receipt, candidate ONNX, approved parent ONNX identity, label-export identity and normalization pipeline. It binds a known camera role; development replay accepts only train/val sources. Role mismatches, changed artifacts, incomplete training, altered quality hold, automatic promotion, duplicate model IDs or unverified ONNX parity fail closed.
 
 The request accepts verified video-result/3 or /4 with actual per-frame PTS, rational time base and RGB hashes. It preserves the parent's result version; it does not invent missing clocks or upgrade old metadata. Every parent analysis frame must decode with identical dimensions, pixels, PTS and time base. The new model uses the pinned RGB normalization, four real pixel rotations and the existing 0.3 score gate. Low-confidence predictions remain inspectable as rejected proposals. Unknown depth and handedness remain null.

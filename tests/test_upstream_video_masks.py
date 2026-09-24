@@ -77,3 +77,25 @@ def test_reject_tampered_raster(bundle):
     (output/'temporal-000012-00.png').write_bytes(b'changed')
     with pytest.raises(ValueError, match='file changed'):
         validate_handoff(output, request, parent)
+
+
+@pytest.mark.parametrize('changed', [None, 'request', 'result'])
+def test_observation_purpose_survives_producer_boundary(bundle, changed):
+    output, request_path, parent, result, write = bundle
+    request = json.loads(request_path.read_text())
+    purpose = {'purpose': 'production_observation'}
+    request.update(schema_version='visioncortex-temporal-mask-request/2', data_use=purpose)
+    parent['data_use'] = purpose
+    result['data_use'] = purpose
+    if changed == 'request':
+        request['data_use'] = {'purpose': 'development'}
+    if changed == 'result':
+        result['data_use'] = {'purpose': 'development'}
+    request_path.write_text(json.dumps(request))
+    result['request_sha256'] = sha256(request_path)
+    write(result)
+    if changed:
+        with pytest.raises(ValueError, match='purpose'):
+            validate_handoff(output, request_path, parent)
+    else:
+        assert validate_handoff(output, request_path, parent)['data_use'] == purpose

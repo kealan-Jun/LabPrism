@@ -1,5 +1,11 @@
 # VisionCortex temporal-mask handoff / 1
 
+2026-09-24: request `/2` adds explicit `data_use`. It accepts existing development
+sources or receipted `production_observation` inputs with `split: null`,
+`training_use_authorized: false` and `independent_ground_truth: false`. Unknown
+roles and sealed evaluation sources remain rejected. Version `/1` remains
+development-only. The producer echoes the purpose and the consumer checks it.
+
 LabPrism exports source-verified sampled frames and detector seeds; VisionCortex
 owns SAM2 execution through `visioncortex.temporal_mask_handoff`. The consumer is
 `scripts/run_upstream_video_masks.py`. It receives models from the existing runtime,
@@ -39,3 +45,14 @@ engine and duplicate policy. It pins engine SHA, actual CUDA backend and executi
 batch size; verifies decoded RGB/ordinal/time against the parent; and excludes old
 pose/relations/events from the new result. Those old outputs remain in the parent
 receipt. This is inference integration, not a new trainer or service restart.
+
+The same detector entry now accepts `--media RECEIPTED_INPUT` instead of `--parent`.
+Fresh videos use 1–10 Hz native-PTS sampling and emit video-result/4 with independent
+output states, an explicit PTS origin, null unknown global/capture clocks, and
+source/crop provenance. It uses the configured role-specific TensorRT engine and
+duplicate policy. `--parent` still verifies every original sample's ordinal,
+native PTS/timebase, dimensions and RGB hash. Both paths share inference; neither
+requires inventing an empty prior model run. PyAV is the pinned dependency in
+`configs/deployment/inference-requirements.txt` and must be available in the
+TensorRT execution environment. These callable stages do not by themselves prove
+that the VisionCortex Web task queue invokes the full pipeline.

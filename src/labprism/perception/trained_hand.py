@@ -9,6 +9,7 @@ from labprism.artifacts import sha256, verify_run
 from labprism.perception.hand_head import validate_training_receipt
 from labprism.perception.hand_rotation import accepted
 from labprism.perception.hand_color import pose_runtime_options
+from labprism.runtime.observation import validate_inference_source
 
 
 def validate_pose_lineage(parent, lineage):
@@ -25,13 +26,16 @@ def validate_pose_lineage(parent, lineage):
 
 def load_replay_model(request, parent):
     version = request.get("schema_version")
-    if version not in {"labprism-trained-hand-replay/1", "labprism-trained-hand-replay/2"}:
+    fresh = version == "labprism-trained-hand-inference/1"
+    if version not in {"labprism-trained-hand-replay/1", "labprism-trained-hand-replay/2"} and not fresh:
         raise ValueError("Explicit trained-hand replay request required")
+    if fresh:
+        validate_inference_source(parent)
     role = parent["source"]["camera_role"]
     if (
         parent.get("schema_version")
         not in {"labprism-video-result/3", "labprism-video-result/4"}
-        or parent["source"]["split"] not in {"train", "val"}
+        or (not fresh and parent["source"]["split"] not in {"train", "val"})
         or role != request.get("role")
     ):
         raise ValueError("Replay requires matching known role and development source")
@@ -57,7 +61,7 @@ def load_replay_model(request, parent):
         validate_pose_lineage(parent, lineage)
     elif "pose_lineage" in request:
         raise ValueError("Separate pose lineage requires replay version 2")
-    if not any(
+    if not fresh and not any(
         m["sha256"] == producer["parent_onnx_sha256"]
         and m["task"] == "hand_landmarks_candidate"
         for m in lineage["models"]

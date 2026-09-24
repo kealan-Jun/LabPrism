@@ -6,6 +6,7 @@ from pathlib import Path
 import subprocess
 
 from labprism.artifacts import sha256, verify_media
+from labprism.contracts import validate_v4_metadata
 
 
 def seal_observation(directory, metadata):
@@ -78,3 +79,23 @@ def verify_observation(directory):
         if Path(name).name != name or path.is_symlink() or not path.is_file() or sha256(path) != digest:
             raise ValueError('Observation member changed')
     return receipt
+
+
+def validate_inference_source(result):
+    """Inference does not assign unknown observations to a training split."""
+    source = result['source']
+    if source.get('camera_role') not in {'first_person', 'third_person'}:
+        raise ValueError('A known camera role is required for the configured detector')
+    if result.get('schema_version') == 'labprism-video-result/4':
+        validate_v4_metadata(result)
+        purpose = result['data_use']['purpose']
+        if purpose == 'production_observation':
+            if (source.get('schema_version') != 'labprism-local-observation/1'
+                    or source.get('training_use_authorized') is not False
+                    or source.get('independent_ground_truth') is not False):
+                raise ValueError('Production observation requires its original non-training receipt')
+            return
+        if purpose != 'development':
+            raise ValueError('This inference entry does not consume evaluation sources')
+    if source.get('split') not in {'train', 'val'}:
+        raise ValueError('Development inference cannot consume sealed tests')

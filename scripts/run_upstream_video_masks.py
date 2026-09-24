@@ -16,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 from labprism.artifacts import freeze_sources, sha256, verify_run
 from labprism.perception.trained_hand import verify_decoded_frame
 from labprism.tracking.upstream_video_masks import validate_handoff
+from labprism.runtime.observation import validate_inference_source
 
 
 def validate_destination(output):
@@ -41,8 +42,7 @@ def run(args):
         sys.path.insert(0, str(args.producer_repo / 'src'))
         from visioncortex.temporal_prompts import select_temporal_prompts
     parent = verify_run(args.parent)
-    if parent['source']['split'] not in {'train', 'val'}:
-        raise ValueError('Development input required')
+    validate_inference_source(parent)
     args.output.mkdir(parents=True, exist_ok=False)
     inputs = args.output / 'input'
     inputs.mkdir()
@@ -51,6 +51,8 @@ def run(args):
         'dimensions': [parent['video']['width'], parent['video']['height']],
         'input_transform': {'encoding': 'JPEG', 'quality': 95, 'resize': False},
         'seed_policy': args.seed_policy, 'maximum_objects': args.max_objects, 'windows': []}
+    if parent['schema_version'] == 'labprism-video-result/4':
+        request.update(schema_version='visioncortex-temporal-mask-request/2', data_use=parent['data_use'])
     targets = {}
     for offset in range(0, len(parent['frames']), 50):
         subset = parent['frames'][offset:offset + 50]
@@ -156,12 +158,16 @@ def receive(args, request_path, producer, parent):
         'observations': sum(len(f['temporal_instances']) for f in handoff['frames']),
         'scope': 'SAM2 temporal stage including model load, input JPEG decode and mask serialization; excludes source export and other modules',
         'generalization': None, 'full_pipeline_fps': None, 'npu_fps': None}
+    if result['schema_version'] == 'labprism-video-result/4':
+        result['output_statuses']['instance_masks'] = {
+            'state': 'predicted' if result['metrics']['observations'] else 'no_detection',
+            'reason': 'Actual SAM2 temporal instance proposals in temporal_instances; identities reset per window'}
     result.setdefault('limitations', []).extend([
         'Temporal masks are unreviewed proposals; identity resets every 50 sampled frames',
         'Geometric grouping limits repeated prompts; conflicting classes remain unresolved and raw detector proposals are retained',
         'Official SAM2 input is a declared JPEG95 derivative; original PTS/RGB and derived file/RGB hashes retained',
         'No cross-camera identity, calibrated physical contact or action confirmation inferred',
-        'Existing development footage has training exposure; no independent generalization claim'])
+        'Exposure is retained from the source receipt; no independent generalization claim'])
     output = args.output / ('consumer-final' if args.receive_only else 'consumer')
     output.mkdir()
     # Preserve every parent-bound raster/evidence artifact referenced by unchanged layers.
