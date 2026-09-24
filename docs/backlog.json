@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 68,
+  "version": 69,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -166,7 +166,8 @@
       ],
       "status": "in_progress",
       "evidence": [
-        "docs/SCAN-CANCELLATION-20260924.zh-CN.md"
+        "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
+        "docs/RECEIPT-STREAMING-20260924.zh-CN.md"
       ],
       "latest_scan_cancellation": {
         "date": "2026-09-24",
@@ -184,6 +185,29 @@
         "report": "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
         "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/scan-cancellation-20260924-v1",
         "observed_model_loads": 6
+      },
+      "latest_receipt_streaming": {
+        "date": "2026-09-24",
+        "commit": "91a210ce13e5b279aa0109b8c28fa9f6d9c3ba47",
+        "production_pid": 2329113,
+        "deployment_status": "actual_model_load_and_scan_progress_verified",
+        "tests_passed": 376,
+        "actual_receipt_records": 2,
+        "byte_identical_serialization": true,
+        "serialization_peak_rss_kib": [
+          279960,
+          101208
+        ],
+        "projection_peak_rss_kib": [
+          193444,
+          112484
+        ],
+        "model_weights_changed": false,
+        "capture_web_unchanged": true,
+        "long_running_oom_resolution": null,
+        "report": "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/receipt-streaming-20260924-v1",
+        "model_loads_observed": 7
       }
     },
     {
@@ -389,7 +413,7 @@
       }
     }
   ],
-  "updated_at": "2026-09-23T23:42:41.947434+00:00",
+  "updated_at": "2026-09-24T00:13:04.975530+00:00",
   "priority_note": "完整产品目标继续：当前v8检测已接CUDA手姿，v5m已接官方SAM2时序结果。继续针对握拳/遮挡、密集器材与分割错误补监督并训练；不以覆盖量冒充精度。v6分割未超过现用基线，保留最佳已验证服务模型。",
   "latest_scan_runtime_iteration": {
     "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
@@ -469,5 +493,28 @@
     "report": "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
     "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/scan-cancellation-20260924-v1",
     "observed_model_loads": 6
+  },
+  "latest_receipt_streaming": {
+    "date": "2026-09-24",
+    "commit": "91a210ce13e5b279aa0109b8c28fa9f6d9c3ba47",
+    "production_pid": 2329113,
+    "deployment_status": "actual_model_load_and_scan_progress_verified",
+    "tests_passed": 376,
+    "actual_receipt_records": 2,
+    "byte_identical_serialization": true,
+    "serialization_peak_rss_kib": [
+      279960,
+      101208
+    ],
+    "projection_peak_rss_kib": [
+      193444,
+      112484
+    ],
+    "model_weights_changed": false,
+    "capture_web_unchanged": true,
+    "long_running_oom_resolution": null,
+    "report": "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
+    "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/receipt-streaming-20260924-v1",
+    "model_loads_observed": 7
   }
 }
