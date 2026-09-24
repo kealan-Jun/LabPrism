@@ -1,7 +1,7 @@
 {
   "schema_version": "labprism-backlog/1",
   "project": "LabPrism",
-  "version": 71,
+  "version": 72,
   "period": [
     "2026-09-17",
     "2026-11-11"
@@ -154,7 +154,8 @@
       ],
       "status": "in_progress",
       "evidence": [
-        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md"
+        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md",
+        "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md"
       ],
       "latest_fresh_corrections": {
         "date": "2026-09-24",
@@ -173,6 +174,46 @@
         "production_model_replaced": false,
         "decision": "rejected_fixed_validation_regression",
         "independent_quality": null
+      },
+      "latest_replay_preservation_upgrade": {
+        "date": "2026-09-24",
+        "report": "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/replay-preservation-20260924-v11",
+        "producer_commit": "334d15849130a7b502ac58914b93d156ffb6cd5b",
+        "training_commit": "5742908b7d3110ebb384002333b3187a075904b9",
+        "new_training_runs": 1,
+        "train_images": 107,
+        "validation_images": 16,
+        "epochs": 30,
+        "actual_batch": 16,
+        "baseline_counts": {
+          "tp": 176,
+          "fp": 22,
+          "fn": 38
+        },
+        "candidate_counts": {
+          "tp": 178,
+          "fp": 21,
+          "fn": 36
+        },
+        "confidence": 0.225,
+        "role": "first_person",
+        "phase": "fine",
+        "production_model_replaced": true,
+        "actual_engine_load_verified": true,
+        "production_pid": 3239200,
+        "capture_web_unchanged": true,
+        "coarse_model_replaced": false,
+        "third_person_replaced": false,
+        "hand_pose_model_promoted": false,
+        "dataset_expansion_this_iteration": 0,
+        "independent_accuracy": null,
+        "processed_video_frames": 506,
+        "hand_observations": 714,
+        "temporal_mask_observations": 3598,
+        "acceptance_sha256": "1175509861192c02bdddc6412040cdb7d9315d42d1590881741f9eaec8d9203e",
+        "deployment_receipt_sha256": "e8c4726581729169f3c465ecadf8b1dc6c97a75aebc225dc476266cf700c67cd",
+        "live_verification_sha256": "b104fb3de4779fd17c2fb6461024e0b6247851639ccc8f11b1faa686217ae0ee"
       }
     },
     {
@@ -189,7 +230,8 @@
         "docs/SCAN-CANCELLATION-20260924.zh-CN.md",
         "docs/RECEIPT-STREAMING-20260924.zh-CN.md",
         "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md",
-        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md"
+        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md",
+        "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md"
       ],
       "latest_scan_cancellation": {
         "date": "2026-09-24",
@@ -264,6 +306,46 @@
         "production_model_replaced": false,
         "decision": "rejected_fixed_validation_regression",
         "independent_quality": null
+      },
+      "latest_replay_preservation_upgrade": {
+        "date": "2026-09-24",
+        "report": "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/replay-preservation-20260924-v11",
+        "producer_commit": "334d15849130a7b502ac58914b93d156ffb6cd5b",
+        "training_commit": "5742908b7d3110ebb384002333b3187a075904b9",
+        "new_training_runs": 1,
+        "train_images": 107,
+        "validation_images": 16,
+        "epochs": 30,
+        "actual_batch": 16,
+        "baseline_counts": {
+          "tp": 176,
+          "fp": 22,
+          "fn": 38
+        },
+        "candidate_counts": {
+          "tp": 178,
+          "fp": 21,
+          "fn": 36
+        },
+        "confidence": 0.225,
+        "role": "first_person",
+        "phase": "fine",
+        "production_model_replaced": true,
+        "actual_engine_load_verified": true,
+        "production_pid": 3239200,
+        "capture_web_unchanged": true,
+        "coarse_model_replaced": false,
+        "third_person_replaced": false,
+        "hand_pose_model_promoted": false,
+        "dataset_expansion_this_iteration": 0,
+        "independent_accuracy": null,
+        "processed_video_frames": 506,
+        "hand_observations": 714,
+        "temporal_mask_observations": 3598,
+        "acceptance_sha256": "1175509861192c02bdddc6412040cdb7d9315d42d1590881741f9eaec8d9203e",
+        "deployment_receipt_sha256": "e8c4726581729169f3c465ecadf8b1dc6c97a75aebc225dc476266cf700c67cd",
+        "live_verification_sha256": "b104fb3de4779fd17c2fb6461024e0b6247851639ccc8f11b1faa686217ae0ee"
       }
     },
     {
@@ -279,7 +361,8 @@
         "/home/x1/.local/share/labprism/receipts/candidate-verification-20260918-v2.json",
         "/home/x1/.local/share/labprism/runs/continuous-candidate-20260918-v1/weighing-first/receipt.json",
         "/home/x1/.local/share/labprism/runs/temporal-candidate-20260918-v2/weighing-first/receipt.json",
-        "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md"
+        "docs/FRESH-VIDEO-PIPELINE-20260924.zh-CN.md",
+        "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md"
       ],
       "note": "连续候选已在2575帧运行相机补偿/外观关联，SAM2视频记忆已在646帧、13个窗口运行；窗口间身份重置。无身份真值、无时序质量验收，候选不晋级。",
       "latest_fresh_video_pipeline": {
@@ -297,6 +380,46 @@
         "production_model_replaced": false,
         "queue_integration": "not_complete",
         "independent_accuracy": null
+      },
+      "latest_replay_preservation_upgrade": {
+        "date": "2026-09-24",
+        "report": "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/replay-preservation-20260924-v11",
+        "producer_commit": "334d15849130a7b502ac58914b93d156ffb6cd5b",
+        "training_commit": "5742908b7d3110ebb384002333b3187a075904b9",
+        "new_training_runs": 1,
+        "train_images": 107,
+        "validation_images": 16,
+        "epochs": 30,
+        "actual_batch": 16,
+        "baseline_counts": {
+          "tp": 176,
+          "fp": 22,
+          "fn": 38
+        },
+        "candidate_counts": {
+          "tp": 178,
+          "fp": 21,
+          "fn": 36
+        },
+        "confidence": 0.225,
+        "role": "first_person",
+        "phase": "fine",
+        "production_model_replaced": true,
+        "actual_engine_load_verified": true,
+        "production_pid": 3239200,
+        "capture_web_unchanged": true,
+        "coarse_model_replaced": false,
+        "third_person_replaced": false,
+        "hand_pose_model_promoted": false,
+        "dataset_expansion_this_iteration": 0,
+        "independent_accuracy": null,
+        "processed_video_frames": 506,
+        "hand_observations": 714,
+        "temporal_mask_observations": 3598,
+        "acceptance_sha256": "1175509861192c02bdddc6412040cdb7d9315d42d1590881741f9eaec8d9203e",
+        "deployment_receipt_sha256": "e8c4726581729169f3c465ecadf8b1dc6c97a75aebc225dc476266cf700c67cd",
+        "live_verification_sha256": "b104fb3de4779fd17c2fb6461024e0b6247851639ccc8f11b1faa686217ae0ee"
       }
     },
     {
@@ -374,7 +497,8 @@
       ],
       "status": "in_progress",
       "evidence": [
-        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md"
+        "docs/FRESH-CORRECTIONS-20260924.zh-CN.md",
+        "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md"
       ],
       "latest_fresh_corrections": {
         "date": "2026-09-24",
@@ -393,6 +517,46 @@
         "production_model_replaced": false,
         "decision": "rejected_fixed_validation_regression",
         "independent_quality": null
+      },
+      "latest_replay_preservation_upgrade": {
+        "date": "2026-09-24",
+        "report": "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md",
+        "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/replay-preservation-20260924-v11",
+        "producer_commit": "334d15849130a7b502ac58914b93d156ffb6cd5b",
+        "training_commit": "5742908b7d3110ebb384002333b3187a075904b9",
+        "new_training_runs": 1,
+        "train_images": 107,
+        "validation_images": 16,
+        "epochs": 30,
+        "actual_batch": 16,
+        "baseline_counts": {
+          "tp": 176,
+          "fp": 22,
+          "fn": 38
+        },
+        "candidate_counts": {
+          "tp": 178,
+          "fp": 21,
+          "fn": 36
+        },
+        "confidence": 0.225,
+        "role": "first_person",
+        "phase": "fine",
+        "production_model_replaced": true,
+        "actual_engine_load_verified": true,
+        "production_pid": 3239200,
+        "capture_web_unchanged": true,
+        "coarse_model_replaced": false,
+        "third_person_replaced": false,
+        "hand_pose_model_promoted": false,
+        "dataset_expansion_this_iteration": 0,
+        "independent_accuracy": null,
+        "processed_video_frames": 506,
+        "hand_observations": 714,
+        "temporal_mask_observations": 3598,
+        "acceptance_sha256": "1175509861192c02bdddc6412040cdb7d9315d42d1590881741f9eaec8d9203e",
+        "deployment_receipt_sha256": "e8c4726581729169f3c465ecadf8b1dc6c97a75aebc225dc476266cf700c67cd",
+        "live_verification_sha256": "b104fb3de4779fd17c2fb6461024e0b6247851639ccc8f11b1faa686217ae0ee"
       }
     },
     {
@@ -506,7 +670,7 @@
       }
     }
   ],
-  "updated_at": "2026-09-24T01:21:33.998426+00:00",
+  "updated_at": "2026-09-24T02:16:38.718604+00:00",
   "priority_note": "完整产品目标继续：当前v8检测已接CUDA手姿，v5m已接官方SAM2时序结果。继续针对握拳/遮挡、密集器材与分割错误补监督并训练；不以覆盖量冒充精度。v6分割未超过现用基线，保留最佳已验证服务模型。",
   "latest_scan_runtime_iteration": {
     "report": "docs/SCAN-RUNTIME-UPGRADE-20260924.zh-CN.md",
@@ -643,5 +807,45 @@
     "production_model_replaced": false,
     "decision": "rejected_fixed_validation_regression",
     "independent_quality": null
+  },
+  "latest_replay_preservation_upgrade": {
+    "date": "2026-09-24",
+    "report": "docs/REPLAY-PRESERVATION-UPGRADE-20260924.zh-CN.md",
+    "receipt_root": "/mnt/realityloop-nas/LabPrism/evaluations/replay-preservation-20260924-v11",
+    "producer_commit": "334d15849130a7b502ac58914b93d156ffb6cd5b",
+    "training_commit": "5742908b7d3110ebb384002333b3187a075904b9",
+    "new_training_runs": 1,
+    "train_images": 107,
+    "validation_images": 16,
+    "epochs": 30,
+    "actual_batch": 16,
+    "baseline_counts": {
+      "tp": 176,
+      "fp": 22,
+      "fn": 38
+    },
+    "candidate_counts": {
+      "tp": 178,
+      "fp": 21,
+      "fn": 36
+    },
+    "confidence": 0.225,
+    "role": "first_person",
+    "phase": "fine",
+    "production_model_replaced": true,
+    "actual_engine_load_verified": true,
+    "production_pid": 3239200,
+    "capture_web_unchanged": true,
+    "coarse_model_replaced": false,
+    "third_person_replaced": false,
+    "hand_pose_model_promoted": false,
+    "dataset_expansion_this_iteration": 0,
+    "independent_accuracy": null,
+    "processed_video_frames": 506,
+    "hand_observations": 714,
+    "temporal_mask_observations": 3598,
+    "acceptance_sha256": "1175509861192c02bdddc6412040cdb7d9315d42d1590881741f9eaec8d9203e",
+    "deployment_receipt_sha256": "e8c4726581729169f3c465ecadf8b1dc6c97a75aebc225dc476266cf700c67cd",
+    "live_verification_sha256": "b104fb3de4779fd17c2fb6461024e0b6247851639ccc8f11b1faa686217ae0ee"
   }
 }

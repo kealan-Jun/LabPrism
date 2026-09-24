@@ -135,7 +135,7 @@ def infer(args, parent, samples, resources):
     backend = scanner.model.predictor.model
     if backend.format != 'engine' or backend.device.type != 'cuda':
         raise RuntimeError('Actual backend was not TensorRT CUDA')
-    result['configuration'] = {'imgsz': scanner.image_size, 'confidence': config['models']['confidence'],
+    result['configuration'] = {'imgsz': scanner.image_size, 'confidence': scanner.prediction_confidence,
         'iou': config['models']['iou'], 'max_detections': config['models']['max_detections'],
         'final_duplicate_policy': policy, 'actual_engine_batches': sorted(set(inference_batches)),
         'end2end': bool(backend.end2end), 'exact_batch_padding_frames': scanner.exact_batch_padding_frames}
